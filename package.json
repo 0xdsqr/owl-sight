@@ -1,0 +1,23 @@
+{
+  "name": "owl-sight",
+  "module": "index.ts",
+  "type": "module",
+  "workspaces": [
+    "packages/tui",
+    "tooling/typescript"
+  ],
+  "scripts": {
+    "build": "bun run --filter='@owl-sight/*' build",     
+    "clean": "rm -rf packages/*/dist packages/*/coverage",
+    "changeset": "changeset",
+    "release": "bun run build && changeset version && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "2.29.8",
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "5.9.3"
+  },
+  "private": true
+}

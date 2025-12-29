@@ -1,0 +1,10 @@
+{
+  "extends": "@owl-sight/tsconfig/library.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "types": ["bun-types"]
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}
