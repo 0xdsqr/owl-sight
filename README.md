@@ -18,6 +18,8 @@
 > [!IMPORTANT]
 > This is a POC that is under devlopment, you can use open tui to build your own. or if you like nix, it's easy to use.
 
+<img src="./.github/assets/basic-tui-sample.png" alt="owl-sight terminal dashboard" width="100%"/>
+
 ## Prerequisites
 
 - **AWS**: Configured AWS credentials file (`~/.aws/credentials`) with at least one profile
