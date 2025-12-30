@@ -17,3 +17,32 @@
 
 > [!IMPORTANT]
 > This is a POC that is under devlopment, you can use open tui to build your own. or if you like nix, it's easy to use.
+
+## Prerequisites
+
+- **AWS**: Configured AWS credentials file (`~/.aws/credentials`) with at least one profile
+- **Cloudflare** (optional): Set `CLOUDFLARE_API_TOKEN` environment variable
+
+## Quick Start
+
+While under development, you can clone and run locally:
+
+```bash
+git clone https://github.com/dsqr/owl-sight
+cd owl-sight
+```
+
+If you have nix installed:
+
+```bash
+nix develop
+bun install
+cd packages/tui && bun run dev
+```
+
+Otherwise, ensure you have Bun installed and run:
+
+```bash
+bun install
+cd packages/tui && bun run dev
+```
