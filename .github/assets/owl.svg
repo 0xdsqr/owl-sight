@@ -1,0 +1,74 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Owl body -->
+  <ellipse cx="100" cy="120" rx="55" ry="65" fill="#7c3aed"/>
+
+  <!-- Wings -->
+  <ellipse cx="50" cy="120" rx="25" ry="45" fill="#6d28d9"/>
+  <ellipse cx="150" cy="120" rx="25" ry="45" fill="#6d28d9"/>
+
+  <!-- Belly -->
+  <ellipse cx="100" cy="135" rx="30" ry="40" fill="#a78bfa"/>
+
+  <!-- Head -->
+  <circle cx="100" cy="75" r="45" fill="#7c3aed"/>
+
+  <!-- Ear tufts -->
+  <path d="M 70 40 Q 65 25 75 30" fill="#6d28d9"/>
+  <path d="M 130 40 Q 135 25 125 30" fill="#6d28d9"/>
+
+  <!-- Glasses frame -->
+  <g stroke="#8b5cf6" stroke-width="3" fill="none">
+    <!-- Left lens -->
+    <circle cx="80" cy="75" r="22" stroke="#ddd6fe" stroke-width="2.5" fill="rgba(221, 214, 254, 0.2)"/>
+    <circle cx="80" cy="75" r="20"/>
+
+    <!-- Right lens -->
+    <circle cx="120" cy="75" r="22" stroke="#ddd6fe" stroke-width="2.5" fill="rgba(221, 214, 254, 0.2)"/>
+    <circle cx="120" cy="75" r="20"/>
+
+    <!-- Bridge -->
+    <line x1="102" y1="75" x2="98" y2="75" stroke-width="2.5"/>
+
+    <!-- Left temple -->
+    <path d="M 58 75 Q 45 70 40 75" stroke-width="2"/>
+
+    <!-- Right temple -->
+    <path d="M 142 75 Q 155 70 160 75" stroke-width="2"/>
+  </g>
+
+  <!-- Eyes through glasses -->
+  <g>
+    <!-- Left eye -->
+    <circle cx="80" cy="75" r="12" fill="#1e1b4b"/>
+    <circle cx="83" cy="72" r="5" fill="#ffffff"/>
+    <circle cx="85" cy="74" r="2" fill="#ffffff"/>
+
+    <!-- Right eye -->
+    <circle cx="120" cy="75" r="12" fill="#1e1b4b"/>
+    <circle cx="123" cy="72" r="5" fill="#ffffff"/>
+    <circle cx="125" cy="74" r="2" fill="#ffffff"/>
+  </g>
+
+  <!-- Beak -->
+  <path d="M 100 85 L 95 95 L 105 95 Z" fill="#f59e0b"/>
+
+  <!-- Feet -->
+  <g fill="#f59e0b">
+    <ellipse cx="85" cy="180" rx="8" ry="5"/>
+    <ellipse cx="115" cy="180" rx="8" ry="5"/>
+    <!-- Talons -->
+    <path d="M 80 180 L 78 185 M 85 180 L 85 185 M 90 180 L 92 185"/>
+    <path d="M 110 180 L 108 185 M 115 180 L 115 185 M 120 180 L 122 185"/>
+  </g>
+
+  <!-- Tail feathers -->
+  <g fill="#6d28d9" opacity="0.8">
+    <ellipse cx="100" cy="185" rx="25" ry="15" transform="rotate(10 100 185)"/>
+  </g>
+
+  <!-- Glasses reflection effect -->
+  <g opacity="0.4">
+    <ellipse cx="75" cy="68" rx="8" ry="6" fill="#ffffff"/>
+    <ellipse cx="115" cy="68" rx="8" ry="6" fill="#ffffff"/>
+  </g>
+</svg>

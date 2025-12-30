@@ -2,10 +2,7 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "./base.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@src/*": ["src/*"],
-      "@/*": ["src/*"]
-    }
+    "jsx": "preserve",
+    "jsxImportSource": "@opentui/solid",
   }
 }

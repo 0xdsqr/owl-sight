@@ -1,5 +1,5 @@
 {
-  "name": "@hoo/tsconfig",
+  "name": "@owl-sight/tsconfig",
   "version": "0.0.0",
   "private": true,
   "files": [
