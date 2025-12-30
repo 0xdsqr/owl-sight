@@ -14,11 +14,11 @@ import {
   useTerminalDimensions,
 } from "@opentui/solid";
 import type { AppConfig } from "./cli";
-import { OverviewTab } from "./components/OverviewTab";
-import { ServicesTab } from "./components/ServicesTab";
-import { TrendTab } from "./components/TrendTab";
-import { AuditTab } from "./components/AuditTab";
-import { SettingsTab } from "./components/SettingsTab";
+import { OverviewTab } from "./components/aws/overview-tab";
+import { ServicesTab } from "./components/aws/services-tab";
+import { TrendTab } from "./components/aws/trend-tab";
+import { AuditTab } from "./components/aws/audit-tab";
+import { SettingsTab } from "./components/common/settings-tab";
 import {
   getAvailableProfiles,
   loadAllData,
@@ -29,10 +29,17 @@ import {
   loadAllData as loadCloudflareData,
   type DashboardData as CloudflareDashboardData,
 } from "./providers/cloudflare/client";
-import { CloudflareOverview } from "./components/CloudflareOverview";
-import { CloudflareZones } from "./components/CloudflareZones";
-import { CloudflareWorkers } from "./components/CloudflareWorkers";
-import { CloudflareR2 } from "./components/CloudflareR2";
+import { CloudflareOverview } from "./components/cloudflare/cloudflare-overview";
+import { CloudflareZones } from "./components/cloudflare/cloudflare-zones";
+import { CloudflareWorkers } from "./components/cloudflare/cloudflare-workers";
+import { CloudflareR2 } from "./components/cloudflare/cloudflare-r2";
+import { OwlLogo } from "./components/common/owl-logo";
+import { Header } from "./components/layout/header";
+import { Footer } from "./components/layout/footer";
+import { ProviderBar } from "./components/layout/provider-bar";
+import { TabBar } from "./components/layout/tab-bar";
+import { LoadingIndicator } from "./components/layout/loading-indicator";
+import { ErrorBox } from "./components/ui/error-box";
 
 // Provider type
 type Provider = "aws" | "cloudflare";
@@ -333,279 +340,6 @@ export function App(props: { config: AppConfig }) {
   );
 }
 
-// ============================================================================
-// Header Component - Now with branding and provider indicator
-// ============================================================================
-
-function Header(props: {
-  provider: Provider;
-  hasCloudflare: boolean;
-  profiles: string[];
-  timeRange: number;
-  isLoading: boolean;
-  onProviderSwitch: (p: Provider) => void;
-}) {
-  const providerColors = {
-    aws: { bg: "#ff9900", fg: "#000000", accent: "#ff9900" },
-    cloudflare: { bg: "#f38020", fg: "#000000", accent: "#f38020" },
-  };
-
-  const colors = () => providerColors[props.provider];
-
-  return (
-    <box
-      height={3}
-      backgroundColor="#161b22"
-      paddingLeft={1}
-      paddingRight={1}
-      flexDirection="row"
-      alignItems="center"
-      borderColor="#30363d"
-      border={["bottom"]}
-    >
-      {/* Logo */}
-      <box flexDirection="row" alignItems="center" gap={1}>
-        <text style={{ fg: "#a78bfa" }}>{"{o,o}"}</text>
-        <text>
-          <span style={{ fg: "#a78bfa", bold: true }}>owl</span>
-          <span style={{ fg: "#8b949e" }}>-</span>
-          <span style={{ fg: "#7c3aed", bold: true }}>sight</span>
-        </text>
-        <text style={{ fg: "#484f58" }}>|</text>
-        <text style={{ fg: colors().accent }}>
-          <b>{props.provider === "aws" ? "AWS" : "Cloudflare"}</b>
-        </text>
-      </box>
-
-      <box flexGrow={1} />
-
-      {/* Status info */}
-      <box flexDirection="row" gap={2} alignItems="center">
-        <Show when={props.provider === "aws"}>
-          <text style={{ fg: "#8b949e" }}>
-            <span style={{ fg: "#7ee787" }}>{props.profiles.length}</span>{" "}
-            profile{props.profiles.length !== 1 ? "s" : ""}
-          </text>
-          <text style={{ fg: "#484f58" }}>|</text>
-          <text style={{ fg: "#8b949e" }}>
-            <span style={{ fg: "#58a6ff" }}>{props.timeRange}</span>d range
-          </text>
-        </Show>
-
-        <Show when={props.isLoading}>
-          <text style={{ fg: "#484f58" }}>|</text>
-          <text style={{ fg: "#f0883e" }}>
-            <span style={{ bold: true }}>...</span> Loading
-          </text>
-        </Show>
-      </box>
-    </box>
-  );
-}
-
-// ============================================================================
-// Provider Bar - Switch between AWS and Cloudflare
-// ============================================================================
-
-function ProviderBar(props: {
-  active: Provider;
-  hasCloudflare: boolean;
-  onSwitch: (p: Provider) => void;
-}) {
-  return (
-    <box
-      height={2}
-      backgroundColor="#0d1117"
-      flexDirection="row"
-      paddingLeft={1}
-      paddingRight={1}
-      alignItems="center"
-      gap={1}
-    >
-      {/* AWS Tab */}
-      <box
-        paddingLeft={2}
-        paddingRight={2}
-        height={2}
-        backgroundColor={props.active === "aws" ? "#21262d" : "transparent"}
-        borderColor={props.active === "aws" ? "#ff9900" : "transparent"}
-        border={props.active === "aws" ? ["bottom"] : undefined}
-        alignItems="center"
-        justifyContent="center"
-      >
-        <text style={{ fg: props.active === "aws" ? "#ff9900" : "#8b949e" }}>
-          <span style={{ fg: "#484f58" }}>[</span>
-          <span style={{ bold: props.active === "aws" }}>AWS</span>
-          <span style={{ fg: "#484f58" }}>]</span>
-        </text>
-      </box>
-
-      {/* Cloudflare Tab */}
-      <box
-        paddingLeft={2}
-        paddingRight={2}
-        height={2}
-        backgroundColor={
-          props.active === "cloudflare" ? "#21262d" : "transparent"
-        }
-        borderColor={props.active === "cloudflare" ? "#f38020" : "transparent"}
-        border={props.active === "cloudflare" ? ["bottom"] : undefined}
-        alignItems="center"
-        justifyContent="center"
-      >
-        <text
-          style={{
-            fg: props.hasCloudflare
-              ? props.active === "cloudflare"
-                ? "#f38020"
-                : "#8b949e"
-              : "#484f58",
-          }}
-        >
-          <span style={{ fg: "#484f58" }}>[</span>
-          <span style={{ bold: props.active === "cloudflare" }}>
-            Cloudflare
-          </span>
-          <span style={{ fg: "#484f58" }}>]</span>
-          <Show when={!props.hasCloudflare}>
-            <span style={{ fg: "#f85149" }}> (no token)</span>
-          </Show>
-        </text>
-      </box>
-
-      <box flexGrow={1} />
-
-      <text style={{ fg: "#484f58" }}>[ / ] switch provider</text>
-    </box>
-  );
-}
-
-// ============================================================================
-// Tab Bar - Now with icons and better styling
-// ============================================================================
-
-function TabBar(props: {
-  tabs: typeof AWS_TABS;
-  activeTab: number;
-  onSelect: (idx: number) => void;
-  provider: Provider;
-}) {
-  const accentColor = () => (props.provider === "aws" ? "#ff9900" : "#f38020");
-
-  return (
-    <box
-      height={1}
-      flexDirection="row"
-      backgroundColor="#161b22"
-      borderColor="#30363d"
-      border={["bottom"]}
-      paddingLeft={1}
-    >
-      <For each={props.tabs}>
-        {(tab, idx) => {
-          const isActive = () => props.activeTab === idx();
-          return (
-            <box
-              paddingLeft={1}
-              paddingRight={1}
-              height={1}
-              backgroundColor={isActive() ? "#21262d" : "transparent"}
-            >
-              <text style={{ fg: isActive() ? accentColor() : "#8b949e" }}>
-                <span style={{ fg: "#484f58" }}>{tab.key}</span>
-                <span style={{ fg: isActive() ? "#c9d1d9" : "#8b949e" }}>
-                  {" "}
-                  {tab.name}
-                </span>
-              </text>
-            </box>
-          );
-        }}
-      </For>
-      <box flexGrow={1} />
-    </box>
-  );
-}
-
-// ============================================================================
-// Loading Indicator - with provider-specific colors
-// ============================================================================
-
-function LoadingIndicator(props: { state: LoadingState; provider: Provider }) {
-  const barWidth = 40;
-  const filled = Math.round((props.state.progress / 100) * barWidth);
-  const empty = barWidth - filled;
-
-  const accentColor = () => (props.provider === "aws" ? "#ff9900" : "#f38020");
-
-  return (
-    <box
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
-      flexGrow={1}
-    >
-      <box
-        border
-        borderStyle="rounded"
-        borderColor="#30363d"
-        backgroundColor="#161b22"
-        padding={3}
-        flexDirection="column"
-        alignItems="center"
-        gap={1}
-      >
-        <text style={{ fg: accentColor() }}>
-          <b>
-            {props.provider === "aws"
-              ? "Loading AWS Data"
-              : "Loading Cloudflare Data"}
-          </b>
-        </text>
-        <text style={{ fg: "#8b949e" }} marginTop={1}>
-          {props.state.message}
-        </text>
-        <text marginTop={1}>
-          <span style={{ fg: accentColor() }}>{"█".repeat(filled)}</span>
-          <span style={{ fg: "#21262d" }}>{"░".repeat(empty)}</span>
-          <span style={{ fg: "#8b949e" }}> {props.state.progress}%</span>
-        </text>
-      </box>
-    </box>
-  );
-}
-
-// ============================================================================
-// Error Box
-// ============================================================================
-
-function ErrorBox(props: { error: string }) {
-  return (
-    <box
-      border
-      borderStyle="rounded"
-      borderColor="#f85149"
-      padding={2}
-      backgroundColor="#21262d"
-      flexDirection="column"
-    >
-      <text style={{ fg: "#f85149" }}>
-        <b>Error</b>
-      </text>
-      <text style={{ fg: "#f0883e" }} marginTop={1}>
-        {props.error}
-      </text>
-      <text style={{ fg: "#8b949e" }} marginTop={2}>
-        Press <span style={{ fg: "#58a6ff" }}>r</span> to retry or check your
-        credentials.
-      </text>
-    </box>
-  );
-}
-
-// ============================================================================
-// Cloudflare Placeholder
-// ============================================================================
 
 function CloudflarePlaceholder(props: { hasToken: boolean }) {
   return (
@@ -644,6 +378,9 @@ function CloudflarePlaceholder(props: { hasToken: boolean }) {
                   export CLOUDFLARE_API_TOKEN="your-token"
                 </text>
               </box>
+              <box marginTop={2}>
+                <OwlLogo />
+              </box>
             </>
           }
         >
@@ -652,41 +389,6 @@ function CloudflarePlaceholder(props: { hasToken: boolean }) {
           </text>
         </Show>
       </box>
-    </box>
-  );
-}
-
-// ============================================================================
-// Footer
-// ============================================================================
-
-function Footer(props: { provider: Provider; hasCloudflare: boolean }) {
-  return (
-    <box
-      height={1}
-      backgroundColor="#161b22"
-      paddingLeft={1}
-      paddingRight={1}
-      borderColor="#30363d"
-      border={["top"]}
-      flexDirection="row"
-      alignItems="center"
-    >
-      <text style={{ fg: "#484f58" }}>
-        <span style={{ fg: "#8b949e" }}>1-5</span> tabs
-        <span style={{ fg: "#484f58" }}>|</span>
-        <span style={{ fg: "#8b949e" }}>Tab</span> next
-        <span style={{ fg: "#484f58" }}>|</span>
-        <span style={{ fg: "#8b949e" }}>r</span> refresh
-        <span style={{ fg: "#484f58" }}>|</span>
-        <span style={{ fg: "#8b949e" }}>`</span> console
-        <span style={{ fg: "#484f58" }}>|</span>
-        <span style={{ fg: "#8b949e" }}>q</span> quit
-        <Show when={props.hasCloudflare}>
-          <span style={{ fg: "#484f58" }}> | </span>
-          <span style={{ fg: "#8b949e" }}>[ ]</span> switch provider
-        </Show>
-      </text>
     </box>
   );
 }
