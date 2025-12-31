@@ -1,6 +1,6 @@
 import { createSignal, createMemo, For, Show } from "solid-js"
 import { useKeyboard } from "@opentui/solid"
-import type { DashboardData, ServiceCost } from "../providers/aws/client"
+import type { DashboardData, ServiceCost } from "../../providers/aws/client"
 
 // Service categories for grouping
 const SERVICE_CATEGORIES: Record<string, string[]> = {

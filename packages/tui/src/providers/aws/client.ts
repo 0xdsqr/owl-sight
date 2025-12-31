@@ -176,34 +176,25 @@ async function getCostSummary(
   }))
 
   // Parse service costs
-  const services: ServiceCost[] = []
-  let currentTotal = 0
+  const rawServices = (currentResp.ResultsByTime ?? [])
+    .flatMap(result => result.Groups ?? [])
+    .map(group => ({
+      service: group.Keys?.[0] ?? "Unknown",
+      cost: parseFloat(group.Metrics?.UnblendedCost?.Amount ?? "0"),
+      percentage: 0,
+    }))
+    .filter(s => s.cost > 0.01) // Filter out tiny costs
   
-  for (const result of currentResp.ResultsByTime ?? []) {
-    for (const group of result.Groups ?? []) {
-      const cost = parseFloat(group.Metrics?.UnblendedCost?.Amount ?? "0")
-      if (cost > 0.01) { // Filter out tiny costs
-        services.push({
-          service: group.Keys?.[0] ?? "Unknown",
-          cost,
-          percentage: 0, // Will calculate after
-        })
-        currentTotal += cost
-      }
-    }
-  }
+  const currentTotal = rawServices.reduce((sum, s) => sum + s.cost, 0)
   
   // Calculate percentages and sort
-  for (const svc of services) {
-    svc.percentage = currentTotal > 0 ? (svc.cost / currentTotal) * 100 : 0
-  }
-  services.sort((a, b) => b.cost - a.cost)
+  const services = rawServices
+    .map(svc => ({ ...svc, percentage: currentTotal > 0 ? (svc.cost / currentTotal) * 100 : 0 }))
+    .sort((a, b) => b.cost - a.cost)
   
   // Previous period total
-  let prevTotal = 0
-  for (const result of prevResp.ResultsByTime ?? []) {
-    prevTotal += parseFloat(result.Total?.UnblendedCost?.Amount ?? "0")
-  }
+  const prevTotal = (prevResp.ResultsByTime ?? [])
+    .reduce((sum, result) => sum + parseFloat(result.Total?.UnblendedCost?.Amount ?? "0"), 0)
   
   const change = prevTotal > 0 ? ((currentTotal - prevTotal) / prevTotal) * 100 : 0
 
@@ -235,15 +226,13 @@ async function getTrendData(
     Metrics: ["UnblendedCost"],
   }))
   
-  const trend: TrendDataPoint[] = []
-  for (const result of resp.ResultsByTime ?? []) {
+  return (resp.ResultsByTime ?? []).map(result => {
     const startDate = new Date(result.TimePeriod?.Start ?? "")
-    const monthName = startDate.toLocaleDateString("en-US", { month: "short" })
-    const cost = parseFloat(result.Total?.UnblendedCost?.Amount ?? "0")
-    trend.push({ month: monthName, cost })
-  }
-  
-  return trend
+    return {
+      month: startDate.toLocaleDateString("en-US", { month: "short" }),
+      cost: parseFloat(result.Total?.UnblendedCost?.Amount ?? "0"),
+    }
+  })
 }
 
 // ============================================================================
@@ -335,67 +324,64 @@ async function getAuditFindings(
       Filters: [{ Name: "instance-state-name", Values: ["stopped"] }]
     }))
     
-    for (const reservation of instances.Reservations ?? []) {
-      for (const instance of reservation.Instances ?? []) {
-        findings.push({
-          type: "stopped_instance",
-          profile,
-          region,
-          resourceId: instance.InstanceId ?? "unknown",
-          description: `Stopped instance: ${instance.InstanceType}`,
-          estimatedWaste: 5, // Rough estimate for EBS costs
-        })
-      }
-    }
+    const stoppedFindings = (instances.Reservations ?? [])
+      .flatMap(r => r.Instances ?? [])
+      .map(instance => ({
+        type: "stopped_instance" as const,
+        profile,
+        region,
+        resourceId: instance.InstanceId ?? "unknown",
+        description: `Stopped instance: ${instance.InstanceType}`,
+        estimatedWaste: 5, // Rough estimate for EBS costs
+      }))
+    findings.push(...stoppedFindings)
     
     // Unattached volumes
     const volumes = await ec2.send(new DescribeVolumesCommand({
       Filters: [{ Name: "status", Values: ["available"] }]
     }))
     
-    for (const volume of volumes.Volumes ?? []) {
+    const volumeFindings = (volumes.Volumes ?? []).map(volume => {
       const sizeGb = volume.Size ?? 0
-      const monthlyEstimate = sizeGb * 0.10 // ~$0.10/GB for gp2
-      findings.push({
-        type: "unattached_volume",
+      return {
+        type: "unattached_volume" as const,
         profile,
         region,
         resourceId: volume.VolumeId ?? "unknown",
         description: `Unattached ${sizeGb}GB ${volume.VolumeType} volume`,
-        estimatedWaste: monthlyEstimate,
-      })
-    }
+        estimatedWaste: sizeGb * 0.10, // ~$0.10/GB for gp2
+      }
+    })
+    findings.push(...volumeFindings)
     
     // Unused Elastic IPs
     const eips = await ec2.send(new DescribeAddressesCommand({}))
     
-    for (const addr of eips.Addresses ?? []) {
-      if (!addr.AssociationId) {
-        findings.push({
-          type: "unused_eip",
-          profile,
-          region,
-          resourceId: addr.PublicIp ?? "unknown",
-          description: `Unused Elastic IP`,
-          estimatedWaste: 3.65, // ~$0.005/hr = ~$3.65/mo
-        })
-      }
-    }
+    const eipFindings = (eips.Addresses ?? [])
+      .filter(addr => !addr.AssociationId)
+      .map(addr => ({
+        type: "unused_eip" as const,
+        profile,
+        region,
+        resourceId: addr.PublicIp ?? "unknown",
+        description: `Unused Elastic IP`,
+        estimatedWaste: 3.65, // ~$0.005/hr = ~$3.65/mo
+      }))
+    findings.push(...eipFindings)
   } catch (err) {
     console.log(`Audit error for ${profile}/${region}:`, err)
   }
   
   // Budget alerts
-  for (const budget of budgets) {
-    if (budget.status !== "ok") {
-      findings.push({
-        type: "budget_alert",
-        profile,
-        resourceId: budget.name,
-        description: `Budget "${budget.name}" at ${budget.percentUsed.toFixed(0)}% (${budget.status})`,
-      })
-    }
-  }
+  const budgetFindings = budgets
+    .filter(budget => budget.status !== "ok")
+    .map(budget => ({
+      type: "budget_alert" as const,
+      profile,
+      resourceId: budget.name,
+      description: `Budget "${budget.name}" at ${budget.percentUsed.toFixed(0)}% (${budget.status})`,
+    }))
+  findings.push(...budgetFindings)
   
   return findings
 }

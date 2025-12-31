@@ -1,6 +1,6 @@
 import { createSignal, createMemo, For, Show } from "solid-js"
 import { useKeyboard } from "@opentui/solid"
-import type { DashboardData, WorkerSummary } from "../providers/cloudflare/client"
+import type { DashboardData, WorkerSummary } from "../../providers/cloudflare/client"
 
 export function CloudflareWorkers(props: { data: DashboardData }) {
   const [selectedIndex, setSelectedIndex] = createSignal(0)

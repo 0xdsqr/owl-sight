@@ -24,6 +24,7 @@
 
 - **AWS**: Configured AWS credentials file (`~/.aws/credentials`) with at least one profile
 - **Cloudflare** (optional): Set `CLOUDFLARE_API_TOKEN` environment variable
+- **R2 file browsing** (optional): Set `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY`
 
 ## Quick Start
 

@@ -1,5 +1,5 @@
 import { For, Show } from "solid-js"
-import type { DashboardData } from "../providers/cloudflare/client"
+import type { DashboardData } from "../../providers/cloudflare/client"
 
 export function CloudflareOverview(props: { data: DashboardData }) {
   return (

@@ -1,6 +1,6 @@
 import { createSignal, createMemo, For, Show } from "solid-js"
 import { useKeyboard } from "@opentui/solid"
-import type { DashboardData, ZoneSummary } from "../providers/cloudflare/client"
+import type { DashboardData, ZoneSummary } from "../../providers/cloudflare/client"
 
 export function CloudflareZones(props: { data: DashboardData }) {
   const [selectedIndex, setSelectedIndex] = createSignal(0)

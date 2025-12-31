@@ -1,5 +1,5 @@
 import { For, Show } from "solid-js"
-import type { DashboardData } from "../providers/aws/client"
+import type { DashboardData } from "../../providers/aws/client"
 
 // Service icons (ASCII art style)
 const SERVICE_ICONS: Record<string, string> = {

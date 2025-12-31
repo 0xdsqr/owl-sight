@@ -1,5 +1,5 @@
 import { createMemo, For, Show } from "solid-js"
-import type { DashboardData, AuditFinding } from "../providers/aws/client"
+import type { DashboardData, AuditFinding } from "../../providers/aws/client"
 
 export function AuditTab(props: { data: DashboardData }) {
   // Group findings by type

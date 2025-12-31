@@ -1,5 +1,5 @@
 import { createMemo, For } from "solid-js"
-import type { DashboardData, TrendDataPoint } from "../providers/aws/client"
+import type { DashboardData, TrendDataPoint } from "../../providers/aws/client"
 
 export function TrendTab(props: { data: DashboardData }) {
   const maxCost = createMemo(() => {
