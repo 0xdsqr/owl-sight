@@ -37,6 +37,7 @@ import { OwlLogo } from "./components/common/owl-logo";
 import { Header } from "./components/layout/header";
 import { Footer } from "./components/layout/footer";
 import { ProviderBar } from "./components/layout/provider-bar";
+import { THEME_COLORS, PROVIDER_COLORS, STATUS_COLORS, FINDING_COLORS } from "./constants/colors";
 import { TabBar } from "./components/layout/tab-bar";
 import { LoadingIndicator } from "./components/layout/loading-indicator";
 import { ErrorBox } from "./components/ui/error-box";
@@ -224,7 +225,7 @@ export function App(props: { config: AppConfig }) {
       flexDirection="column"
       width="100%"
       height={dimensions().height}
-      backgroundColor="#0d1117"
+      backgroundColor={THEME_COLORS.background.primary}
     >
       {/* Header */}
       <Header
@@ -352,14 +353,14 @@ function CloudflarePlaceholder(props: { hasToken: boolean }) {
       <box
         border
         borderStyle="rounded"
-        borderColor="#30363d"
-        backgroundColor="#161b22"
+        borderColor={THEME_COLORS.border.default}
+        backgroundColor={THEME_COLORS.background.secondary}
         padding={3}
         flexDirection="column"
         alignItems="center"
         width={60}
       >
-        <text style={{ fg: "#f38020" }}>
+        <text style={{ fg: PROVIDER_COLORS.cloudflare.primary }}>
           <b>Cloudflare Dashboard</b>
         </text>
 
@@ -367,14 +368,14 @@ function CloudflarePlaceholder(props: { hasToken: boolean }) {
           when={props.hasToken}
           fallback={
             <>
-              <text style={{ fg: "#f85149" }} marginTop={2}>
+              <text style={{ fg: FINDING_COLORS.error }} marginTop={2}>
                 No API token configured
               </text>
-              <text style={{ fg: "#8b949e" }} marginTop={1}>
+              <text style={{ fg: THEME_COLORS.text.secondary }} marginTop={1}>
                 Set CLOUDFLARE_API_TOKEN environment variable
               </text>
               <box marginTop={2} flexDirection="column" gap={1}>
-                <text style={{ fg: "#484f58" }}>
+                <text style={{ fg: THEME_COLORS.text.muted }}>
                   export CLOUDFLARE_API_TOKEN="your-token"
                 </text>
               </box>
@@ -384,7 +385,7 @@ function CloudflarePlaceholder(props: { hasToken: boolean }) {
             </>
           }
         >
-          <text style={{ fg: "#7ee787" }} marginTop={2}>
+          <text style={{ fg: STATUS_COLORS.success }} marginTop={2}>
             Token configured - Loading...
           </text>
         </Show>
