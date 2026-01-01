@@ -1,6 +1,7 @@
 import { createSignal, createMemo, For, Show } from "solid-js"
 import { useKeyboard } from "@opentui/solid"
 import type { DashboardData, R2BucketSummary } from "../providers/cloudflare/client"
+import { THEME_COLORS, PROVIDER_COLORS, STATUS_COLORS, FINDING_COLORS } from "../../constants/colors"
 
 export function CloudflareR2(props: { data: DashboardData }) {
   const [selectedIndex, setSelectedIndex] = createSignal(0)
@@ -66,15 +67,15 @@ export function CloudflareR2(props: { data: DashboardData }) {
       <box
         flexDirection="row"
         height={2}
-        backgroundColor="#161b22"
-        borderColor="#30363d"
+        backgroundColor={THEME_COLORS.background.secondary}
+        borderColor={THEME_COLORS.border.default}
         border={["bottom"]}
         paddingLeft={1}
         paddingRight={1}
         alignItems="center"
         gap={1}
       >
-        <text style={{ fg: "#8b949e" }}>Sort by:</text>
+        <text style={{ fg: THEME_COLORS.text.secondary }}>Sort by:</text>
         <For each={[
           { key: "name", label: "Name" },
           { key: "size", label: "Size" },
@@ -86,11 +87,11 @@ export function CloudflareR2(props: { data: DashboardData }) {
               <box
                 paddingLeft={1}
                 paddingRight={1}
-                backgroundColor={isActive() ? "#21262d" : "transparent"}
-                borderColor={isActive() ? "#f38020" : "transparent"}
+                backgroundColor={isActive() ? THEME_COLORS.background.tertiary : "transparent"}
+                borderColor={isActive() ? PROVIDER_COLORS.cloudflare.primary : "transparent"}
                 border={isActive() ? ["bottom"] : undefined}
               >
-                <text style={{ fg: isActive() ? "#f38020" : "#8b949e" }}>
+                <text style={{ fg: isActive() ? PROVIDER_COLORS.cloudflare.primary : THEME_COLORS.text.secondary }}>
                   {option.label}
                 </text>
               </box>
@@ -98,9 +99,9 @@ export function CloudflareR2(props: { data: DashboardData }) {
           }}
         </For>
         <box flexGrow={1} />
-        <text style={{ fg: "#484f58" }}>
-          <span style={{ fg: "#8b949e" }}>s</span> sort
-          <span style={{ fg: "#8b949e" }}>j/k</span> select
+        <text style={{ fg: THEME_COLORS.text.muted }}>
+          <span style={{ fg: THEME_COLORS.text.secondary }}>s</span> sort
+          <span style={{ fg: THEME_COLORS.text.secondary }}>j/k</span> select
         </text>
       </box>
 
@@ -110,7 +111,7 @@ export function CloudflareR2(props: { data: DashboardData }) {
         <box
           border
           borderStyle="rounded"
-          borderColor="#30363d"
+          borderColor={THEME_COLORS.border.default}
           flexDirection="column"
           flexGrow={2}
           title=" R2 Buckets "
@@ -119,16 +120,16 @@ export function CloudflareR2(props: { data: DashboardData }) {
           {/* Header */}
           <box
             flexDirection="row"
-            backgroundColor="#21262d"
+            backgroundColor={THEME_COLORS.background.tertiary}
             paddingLeft={1}
             paddingRight={1}
             height={1}
           >
-            <text width={24} style={{ fg: "#8b949e" }}><b>Bucket Name</b></text>
-            <text width={12} style={{ fg: "#8b949e" }}><b>Storage</b></text>
-            <text width={10} style={{ fg: "#8b949e" }}><b>Objects</b></text>
-            <text width={10} style={{ fg: "#8b949e" }}><b>Reads</b></text>
-            <text width={10} style={{ fg: "#8b949e" }}><b>Cost/mo</b></text>
+            <text width={24} style={{ fg: THEME_COLORS.text.secondary }}><b>Bucket Name</b></text>
+            <text width={12} style={{ fg: THEME_COLORS.text.secondary }}><b>Storage</b></text>
+            <text width={10} style={{ fg: THEME_COLORS.text.secondary }}><b>Objects</b></text>
+            <text width={10} style={{ fg: THEME_COLORS.text.secondary }}><b>Reads</b></text>
+            <text width={10} style={{ fg: THEME_COLORS.text.secondary }}><b>Cost/mo</b></text>
           </box>
 
           {/* Scrollable content */}
@@ -136,7 +137,7 @@ export function CloudflareR2(props: { data: DashboardData }) {
             when={sortedBuckets().length > 0}
             fallback={
               <box padding={1} flexGrow={1} alignItems="center" justifyContent="center">
-                <text style={{ fg: "#484f58" }}>No R2 buckets found</text>
+                <text style={{ fg: THEME_COLORS.text.muted }}>No R2 buckets found</text>
               </box>
             }
           >
@@ -156,11 +157,11 @@ export function CloudflareR2(props: { data: DashboardData }) {
                       paddingLeft={1}
                       paddingRight={1}
                       height={1}
-                      backgroundColor={isSelected() ? "#21262d" : "transparent"}
+                      backgroundColor={isSelected() ? THEME_COLORS.background.tertiary : "transparent"}
                     >
                       <text
                         width={24}
-                        style={{ fg: isSelected() ? "#c9d1d9" : "#8b949e" }}
+                        style={{ fg: isSelected() ? THEME_COLORS.text.primary : THEME_COLORS.text.secondary }}
                       >
                         {bucket.bucketName.length > 22
                           ? bucket.bucketName.slice(0, 20) + ".."
@@ -168,25 +169,25 @@ export function CloudflareR2(props: { data: DashboardData }) {
                       </text>
                       <text
                         width={12}
-                        style={{ fg: isSelected() ? "#58a6ff" : "#8b949e" }}
+                        style={{ fg: isSelected() ? STATUS_COLORS.info : THEME_COLORS.text.secondary }}
                       >
                         {formatBytes(bucket.storageBytes)}
                       </text>
                       <text
                         width={10}
-                        style={{ fg: isSelected() ? "#7ee787" : "#8b949e" }}
+                        style={{ fg: isSelected() ? STATUS_COLORS.success : THEME_COLORS.text.secondary }}
                       >
                         {formatNumber(bucket.objectCount)}
                       </text>
                       <text
                         width={10}
-                        style={{ fg: isStale ? "#d29922" : "#8b949e" }}
+                        style={{ fg: isStale ? FINDING_COLORS.warning : THEME_COLORS.text.secondary }}
                       >
                         {bucket.operationsB30d > 0 ? formatNumber(bucket.operationsB30d) : "--"}
                       </text>
                       <text
                         width={10}
-                        style={{ fg: isSelected() ? "#f38020" : "#8b949e" }}
+                        style={{ fg: isSelected() ? PROVIDER_COLORS.cloudflare.primary : THEME_COLORS.text.secondary }}
                       >
                         {formatCurrency(bucket.estimatedCost)}
                       </text>
@@ -199,18 +200,18 @@ export function CloudflareR2(props: { data: DashboardData }) {
             {/* Total row */}
             <box
               flexDirection="row"
-              backgroundColor="#21262d"
+              backgroundColor={THEME_COLORS.background.tertiary}
               paddingLeft={1}
               paddingRight={1}
               height={1}
-              borderColor="#30363d"
+              borderColor={THEME_COLORS.border.default}
               border={["top"]}
             >
-              <text width={24} style={{ fg: "#f38020" }}><b>TOTAL</b></text>
-              <text width={12} style={{ fg: "#58a6ff" }}><b>{formatBytes(totalStorage())}</b></text>
-              <text width={10} style={{ fg: "#7ee787" }}><b>{formatNumber(totalObjects())}</b></text>
-              <text width={10} style={{ fg: "#484f58" }}>--</text>
-              <text width={10} style={{ fg: "#f38020" }}><b>{formatCurrency(totalCost())}</b></text>
+              <text width={24} style={{ fg: PROVIDER_COLORS.cloudflare.primary }}><b>TOTAL</b></text>
+              <text width={12} style={{ fg: STATUS_COLORS.info }}><b>{formatBytes(totalStorage())}</b></text>
+              <text width={10} style={{ fg: STATUS_COLORS.success }}><b>{formatNumber(totalObjects())}</b></text>
+              <text width={10} style={{ fg: THEME_COLORS.text.muted }}>--</text>
+              <text width={10} style={{ fg: PROVIDER_COLORS.cloudflare.primary }}><b>{formatCurrency(totalCost())}</b></text>
             </box>
           </Show>
         </box>
@@ -219,7 +220,7 @@ export function CloudflareR2(props: { data: DashboardData }) {
         <box
           border
           borderStyle="rounded"
-          borderColor="#30363d"
+          borderColor={THEME_COLORS.border.default}
           flexDirection="column"
           width={32}
           title=" Details "
@@ -229,7 +230,7 @@ export function CloudflareR2(props: { data: DashboardData }) {
             when={sortedBuckets()[selectedIndex()]}
             fallback={
               <box padding={1}>
-                <text style={{ fg: "#484f58" }}>Select a bucket</text>
+                <text style={{ fg: THEME_COLORS.text.muted }}>Select a bucket</text>
               </box>
             }
           >
@@ -243,26 +244,26 @@ export function CloudflareR2(props: { data: DashboardData }) {
 
               return (
                 <box flexDirection="column" padding={1} gap={1}>
-                  <text style={{ fg: "#f38020" }}><b>{bucket().bucketName}</b></text>
+                  <text style={{ fg: PROVIDER_COLORS.cloudflare.primary }}><b>{bucket().bucketName}</b></text>
 
                   <box marginTop={1}>
-                    <text style={{ fg: "#8b949e" }}>Account ID</text>
-                    <text style={{ fg: "#484f58" }}>{bucket().accountId.slice(0, 12)}...</text>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>Account ID</text>
+                    <text style={{ fg: THEME_COLORS.text.muted }}>{bucket().accountId.slice(0, 12)}...</text>
                   </box>
 
                   <box marginTop={1}>
-                    <text style={{ fg: "#8b949e" }}>Storage Size</text>
-                    <text style={{ fg: "#58a6ff" }}><b>{formatBytes(bucket().storageBytes)}</b></text>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>Storage Size</text>
+                    <text style={{ fg: STATUS_COLORS.info }}><b>{formatBytes(bucket().storageBytes)}</b></text>
                   </box>
 
                   <box>
-                    <text style={{ fg: "#8b949e" }}>Object Count</text>
-                    <text style={{ fg: "#7ee787" }}>{formatNumber(bucket().objectCount)}</text>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>Object Count</text>
+                    <text style={{ fg: STATUS_COLORS.success }}>{formatNumber(bucket().objectCount)}</text>
                   </box>
 
                   <box>
-                    <text style={{ fg: "#8b949e" }}>Avg Size/Object</text>
-                    <text style={{ fg: "#484f58" }}>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>Avg Size/Object</text>
+                    <text style={{ fg: THEME_COLORS.text.muted }}>
                       {bucket().objectCount > 0
                         ? formatBytes(bucket().storageBytes / bucket().objectCount)
                         : "N/A"}
@@ -270,38 +271,38 @@ export function CloudflareR2(props: { data: DashboardData }) {
                   </box>
 
                   <box marginTop={1}>
-                    <text style={{ fg: "#8b949e" }}>Class A Ops (30d)</text>
-                    <text style={{ fg: "#58a6ff" }}>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>Class A Ops (30d)</text>
+                    <text style={{ fg: STATUS_COLORS.info }}>
                       {bucket().operationsA30d > 0 ? formatNumber(bucket().operationsA30d) : "0"}
                     </text>
                   </box>
 
                   <box>
-                    <text style={{ fg: "#8b949e" }}>Class B Ops (30d)</text>
-                    <text style={{ fg: isStale() ? "#d29922" : "#58a6ff" }}>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>Class B Ops (30d)</text>
+                    <text style={{ fg: isStale() ? FINDING_COLORS.warning : STATUS_COLORS.info }}>
                       {bucket().operationsB30d > 0 ? formatNumber(bucket().operationsB30d) : "0"}
                     </text>
                   </box>
 
                   <box marginTop={1}>
-                    <text style={{ fg: "#8b949e" }}>Est. Cost/mo</text>
-                    <text style={{ fg: "#f38020" }}><b>{formatCurrency(bucket().estimatedCost)}</b></text>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>Est. Cost/mo</text>
+                    <text style={{ fg: PROVIDER_COLORS.cloudflare.primary }}><b>{formatCurrency(bucket().estimatedCost)}</b></text>
                   </box>
 
                   <box>
-                    <text style={{ fg: "#8b949e" }}>Cost/GB</text>
-                    <text style={{ fg: "#484f58" }}>{formatCurrency(costPerGB())}</text>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>Cost/GB</text>
+                    <text style={{ fg: THEME_COLORS.text.muted }}>{formatCurrency(costPerGB())}</text>
                   </box>
 
                   {/* Storage size indicator */}
                   <box marginTop={2}>
-                    <text style={{ fg: "#484f58" }}>Storage usage:</text>
+                    <text style={{ fg: THEME_COLORS.text.muted }}>Storage usage:</text>
                     <box marginTop={1}>
                       <text>
-                        <span style={{ fg: "#58a6ff" }}>
+                        <span style={{ fg: STATUS_COLORS.info }}>
                           {"█".repeat(Math.min(20, Math.round(bucket().storageBytes / (totalStorage() / 20))))}
                         </span>
-                        <span style={{ fg: "#21262d" }}>
+                        <span style={{ fg: THEME_COLORS.background.tertiary }}>
                           {"░".repeat(Math.max(0, 20 - Math.min(20, Math.round(bucket().storageBytes / (totalStorage() / 20)))))}
                         </span>
                       </text>
@@ -309,18 +310,18 @@ export function CloudflareR2(props: { data: DashboardData }) {
                   </box>
 
                   <Show when={isStale()}>
-                    <box marginTop={2} padding={1} backgroundColor="#21262d" borderColor="#d29922" border>
-                      <text style={{ fg: "#d29922" }}>⚠ Stale bucket</text>
-                      <text style={{ fg: "#8b949e" }}>No reads in 30 days</text>
+                    <box marginTop={2} padding={1} backgroundColor={THEME_COLORS.background.tertiary} borderColor={FINDING_COLORS.warning} border>
+                      <text style={{ fg: FINDING_COLORS.warning }}>⚠ Stale bucket</text>
+                      <text style={{ fg: THEME_COLORS.text.secondary }}>No reads in 30 days</text>
                     </box>
                   </Show>
 
                   {/* R2 Pricing note */}
-                  <box marginTop={2} padding={1} backgroundColor="#161b22" borderColor="#30363d" border>
-                    <text style={{ fg: "#484f58" }}>R2 Pricing:</text>
-                    <text style={{ fg: "#8b949e" }}>$0.015/GB/month</text>
-                    <text style={{ fg: "#8b949e" }}>Free Class A ops</text>
-                    <text style={{ fg: "#8b949e" }}>Free egress</text>
+                  <box marginTop={2} padding={1} backgroundColor={THEME_COLORS.background.secondary} borderColor={THEME_COLORS.border.default} border>
+                    <text style={{ fg: THEME_COLORS.text.muted }}>R2 Pricing:</text>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>$0.015/GB/month</text>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>Free Class A ops</text>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>Free egress</text>
                   </box>
                 </box>
               )
@@ -336,16 +337,16 @@ export function CloudflareR2(props: { data: DashboardData }) {
         flexDirection="row"
         gap={2}
       >
-        <text style={{ fg: "#484f58" }}>
-          <span style={{ fg: "#58a6ff" }}>{sortedBuckets().length}</span> bucket{sortedBuckets().length !== 1 ? "s" : ""}
+        <text style={{ fg: THEME_COLORS.text.muted }}>
+          <span style={{ fg: STATUS_COLORS.info }}>{sortedBuckets().length}</span> bucket{sortedBuckets().length !== 1 ? "s" : ""}
         </text>
-        <text style={{ fg: "#30363d" }}>|</text>
-        <text style={{ fg: "#484f58" }}>
-          Total storage: <span style={{ fg: "#58a6ff" }}>{formatBytes(totalStorage())}</span>
+        <text style={{ fg: THEME_COLORS.border.default }}>|</text>
+        <text style={{ fg: THEME_COLORS.text.muted }}>
+          Total storage: <span style={{ fg: STATUS_COLORS.info }}>{formatBytes(totalStorage())}</span>
         </text>
-        <text style={{ fg: "#30363d" }}>|</text>
-        <text style={{ fg: "#484f58" }}>
-          Est. cost: <span style={{ fg: "#f38020" }}>{formatCurrency(totalCost())}</span>
+        <text style={{ fg: THEME_COLORS.border.default }}>|</text>
+        <text style={{ fg: THEME_COLORS.text.muted }}>
+          Est. cost: <span style={{ fg: PROVIDER_COLORS.cloudflare.primary }}>{formatCurrency(totalCost())}</span>
         </text>
       </box>
     </box>

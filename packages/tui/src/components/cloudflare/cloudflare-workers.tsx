@@ -1,6 +1,7 @@
 import { createSignal, createMemo, For, Show } from "solid-js"
 import { useKeyboard } from "@opentui/solid"
 import type { DashboardData, WorkerSummary } from "../providers/cloudflare/client"
+import { THEME_COLORS, PROVIDER_COLORS, STATUS_COLORS, FINDING_COLORS } from "../../constants/colors"
 
 export function CloudflareWorkers(props: { data: DashboardData }) {
   const [selectedIndex, setSelectedIndex] = createSignal(0)
@@ -73,15 +74,15 @@ export function CloudflareWorkers(props: { data: DashboardData }) {
       <box
         flexDirection="row"
         height={2}
-        backgroundColor="#161b22"
-        borderColor="#30363d"
+        backgroundColor={THEME_COLORS.background.secondary}
+        borderColor={THEME_COLORS.border.default}
         border={["bottom"]}
         paddingLeft={1}
         paddingRight={1}
         alignItems="center"
         gap={1}
       >
-        <text style={{ fg: "#8b949e" }}>Sort by:</text>
+        <text style={{ fg: THEME_COLORS.text.secondary }}>Sort by:</text>
         <For each={[
           { key: "name", label: "Name" },
           { key: "requests", label: "Requests" },
@@ -93,11 +94,11 @@ export function CloudflareWorkers(props: { data: DashboardData }) {
               <box
                 paddingLeft={1}
                 paddingRight={1}
-                backgroundColor={isActive() ? "#21262d" : "transparent"}
-                borderColor={isActive() ? "#f38020" : "transparent"}
+                backgroundColor={isActive() ? THEME_COLORS.background.tertiary : "transparent"}
+                borderColor={isActive() ? PROVIDER_COLORS.cloudflare.primary : "transparent"}
                 border={isActive() ? ["bottom"] : undefined}
               >
-                <text style={{ fg: isActive() ? "#f38020" : "#8b949e" }}>
+                <text style={{ fg: isActive() ? PROVIDER_COLORS.cloudflare.primary : THEME_COLORS.text.secondary }}>
                   {option.label}
                 </text>
               </box>
@@ -105,9 +106,9 @@ export function CloudflareWorkers(props: { data: DashboardData }) {
           }}
         </For>
         <box flexGrow={1} />
-        <text style={{ fg: "#484f58" }}>
-          <span style={{ fg: "#8b949e" }}>s</span> sort
-          <span style={{ fg: "#8b949e" }}>j/k</span> select
+        <text style={{ fg: THEME_COLORS.text.muted }}>
+          <span style={{ fg: THEME_COLORS.text.secondary }}>s</span> sort
+          <span style={{ fg: THEME_COLORS.text.secondary }}>j/k</span> select
         </text>
       </box>
 
@@ -117,7 +118,7 @@ export function CloudflareWorkers(props: { data: DashboardData }) {
         <box
           border
           borderStyle="rounded"
-          borderColor="#30363d"
+          borderColor={THEME_COLORS.border.default}
           flexDirection="column"
           flexGrow={2}
           title=" Workers "
@@ -126,16 +127,16 @@ export function CloudflareWorkers(props: { data: DashboardData }) {
           {/* Header */}
           <box
             flexDirection="row"
-            backgroundColor="#21262d"
+            backgroundColor={THEME_COLORS.background.tertiary}
             paddingLeft={1}
             paddingRight={1}
             height={1}
           >
-            <text width={24} style={{ fg: "#8b949e" }}><b>Script Name</b></text>
-            <text width={12} style={{ fg: "#8b949e" }}><b>Requests</b></text>
-            <text width={10} style={{ fg: "#8b949e" }}><b>CPU Time</b></text>
-            <text width={8} style={{ fg: "#8b949e" }}><b>Errors</b></text>
-            <text width={10} style={{ fg: "#8b949e" }}><b>Cost</b></text>
+            <text width={24} style={{ fg: THEME_COLORS.text.secondary }}><b>Script Name</b></text>
+            <text width={12} style={{ fg: THEME_COLORS.text.secondary }}><b>Requests</b></text>
+            <text width={10} style={{ fg: THEME_COLORS.text.secondary }}><b>CPU Time</b></text>
+            <text width={8} style={{ fg: THEME_COLORS.text.secondary }}><b>Errors</b></text>
+            <text width={10} style={{ fg: THEME_COLORS.text.secondary }}><b>Cost</b></text>
           </box>
 
           {/* Scrollable content */}
@@ -143,7 +144,7 @@ export function CloudflareWorkers(props: { data: DashboardData }) {
             when={sortedWorkers().length > 0}
             fallback={
               <box padding={1} flexGrow={1} alignItems="center" justifyContent="center">
-                <text style={{ fg: "#484f58" }}>No workers found</text>
+                <text style={{ fg: THEME_COLORS.text.muted }}>No workers found</text>
               </box>
             }
           >
@@ -163,11 +164,11 @@ export function CloudflareWorkers(props: { data: DashboardData }) {
                       paddingLeft={1}
                       paddingRight={1}
                       height={1}
-                      backgroundColor={isSelected() ? "#21262d" : "transparent"}
+                      backgroundColor={isSelected() ? THEME_COLORS.background.tertiary : "transparent"}
                     >
                       <text
                         width={24}
-                        style={{ fg: isSelected() ? "#c9d1d9" : "#8b949e" }}
+                        style={{ fg: isSelected() ? THEME_COLORS.text.primary : THEME_COLORS.text.secondary }}
                       >
                         {worker.scriptName.length > 22
                           ? worker.scriptName.slice(0, 20) + ".."
@@ -175,25 +176,25 @@ export function CloudflareWorkers(props: { data: DashboardData }) {
                       </text>
                       <text
                         width={12}
-                        style={{ fg: isSelected() ? "#58a6ff" : "#8b949e" }}
+                        style={{ fg: isSelected() ? STATUS_COLORS.info : THEME_COLORS.text.secondary }}
                       >
                         {formatNumber(worker.requests30d)}
                       </text>
                       <text
                         width={10}
-                        style={{ fg: isSelected() ? "#7ee787" : "#8b949e" }}
+                        style={{ fg: isSelected() ? STATUS_COLORS.success : THEME_COLORS.text.secondary }}
                       >
                         {formatDuration(worker.cpuTime30d)}
                       </text>
                       <text
                         width={8}
-                        style={{ fg: hasErrors ? "#f85149" : "#484f58" }}
+                        style={{ fg: hasErrors ? FINDING_COLORS.error : THEME_COLORS.text.muted }}
                       >
                         {hasErrors ? formatNumber(worker.errors30d) : "--"}
                       </text>
                       <text
                         width={10}
-                        style={{ fg: isSelected() ? "#f38020" : "#8b949e" }}
+                        style={{ fg: isSelected() ? PROVIDER_COLORS.cloudflare.primary : THEME_COLORS.text.secondary }}
                       >
                         {formatCurrency(worker.estimatedCost)}
                       </text>
@@ -206,18 +207,18 @@ export function CloudflareWorkers(props: { data: DashboardData }) {
             {/* Total row */}
             <box
               flexDirection="row"
-              backgroundColor="#21262d"
+              backgroundColor={THEME_COLORS.background.tertiary}
               paddingLeft={1}
               paddingRight={1}
               height={1}
-              borderColor="#30363d"
+              borderColor={THEME_COLORS.border.default}
               border={["top"]}
             >
-              <text width={24} style={{ fg: "#f38020" }}><b>TOTAL</b></text>
-              <text width={12} style={{ fg: "#58a6ff" }}><b>{formatNumber(totalRequests())}</b></text>
-              <text width={10} style={{ fg: "#484f58" }}>--</text>
-              <text width={8} style={{ fg: "#484f58" }}>--</text>
-              <text width={10} style={{ fg: "#f38020" }}><b>{formatCurrency(totalCost())}</b></text>
+              <text width={24} style={{ fg: PROVIDER_COLORS.cloudflare.primary }}><b>TOTAL</b></text>
+              <text width={12} style={{ fg: STATUS_COLORS.info }}><b>{formatNumber(totalRequests())}</b></text>
+              <text width={10} style={{ fg: THEME_COLORS.text.muted }}>--</text>
+              <text width={8} style={{ fg: THEME_COLORS.text.muted }}>--</text>
+              <text width={10} style={{ fg: PROVIDER_COLORS.cloudflare.primary }}><b>{formatCurrency(totalCost())}</b></text>
             </box>
           </Show>
         </box>
@@ -226,7 +227,7 @@ export function CloudflareWorkers(props: { data: DashboardData }) {
         <box
           border
           borderStyle="rounded"
-          borderColor="#30363d"
+          borderColor={THEME_COLORS.border.default}
           flexDirection="column"
           width={32}
           title=" Details "
@@ -236,7 +237,7 @@ export function CloudflareWorkers(props: { data: DashboardData }) {
             when={sortedWorkers()[selectedIndex()]}
             fallback={
               <box padding={1}>
-                <text style={{ fg: "#484f58" }}>Select a worker</text>
+                <text style={{ fg: THEME_COLORS.text.muted }}>Select a worker</text>
               </box>
             }
           >
@@ -249,56 +250,56 @@ export function CloudflareWorkers(props: { data: DashboardData }) {
 
               return (
                 <box flexDirection="column" padding={1} gap={1}>
-                  <text style={{ fg: "#f38020" }}><b>{worker().scriptName}</b></text>
+                  <text style={{ fg: PROVIDER_COLORS.cloudflare.primary }}><b>{worker().scriptName}</b></text>
 
                   <box marginTop={1}>
-                    <text style={{ fg: "#8b949e" }}>Account ID</text>
-                    <text style={{ fg: "#484f58" }}>{worker().accountId.slice(0, 12)}...</text>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>Account ID</text>
+                    <text style={{ fg: THEME_COLORS.text.muted }}>{worker().accountId.slice(0, 12)}...</text>
                   </box>
 
                   <box marginTop={1}>
-                    <text style={{ fg: "#8b949e" }}>Requests (30d)</text>
-                    <text style={{ fg: "#58a6ff" }}>{formatNumber(worker().requests30d)}</text>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>Requests (30d)</text>
+                    <text style={{ fg: STATUS_COLORS.info }}>{formatNumber(worker().requests30d)}</text>
                   </box>
 
                   <box>
-                    <text style={{ fg: "#8b949e" }}>CPU Time (30d)</text>
-                    <text style={{ fg: "#7ee787" }}>{formatDuration(worker().cpuTime30d)}</text>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>CPU Time (30d)</text>
+                    <text style={{ fg: STATUS_COLORS.success }}>{formatDuration(worker().cpuTime30d)}</text>
                   </box>
 
                   <box>
-                    <text style={{ fg: "#8b949e" }}>Errors (30d)</text>
-                    <text style={{ fg: worker().errors30d > 0 ? "#f85149" : "#7ee787" }}>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>Errors (30d)</text>
+                    <text style={{ fg: worker().errors30d > 0 ? FINDING_COLORS.error : STATUS_COLORS.success }}>
                       {formatNumber(worker().errors30d)}
                     </text>
                   </box>
 
                   <box>
-                    <text style={{ fg: "#8b949e" }}>Error Rate</text>
-                    <text style={{ fg: errorRate() > 5 ? "#f85149" : errorRate() > 1 ? "#d29922" : "#7ee787" }}>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>Error Rate</text>
+                    <text style={{ fg: errorRate() > 5 ? FINDING_COLORS.error : errorRate() > 1 ? FINDING_COLORS.warning : STATUS_COLORS.success }}>
                       {errorRate().toFixed(2)}%
                     </text>
                   </box>
 
                   <box marginTop={1}>
-                    <text style={{ fg: "#8b949e" }}>Est. Cost</text>
-                    <text style={{ fg: "#f38020" }}><b>{formatCurrency(worker().estimatedCost)}</b></text>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>Est. Cost</text>
+                    <text style={{ fg: PROVIDER_COLORS.cloudflare.primary }}><b>{formatCurrency(worker().estimatedCost)}</b></text>
                   </box>
 
                   <box>
-                    <text style={{ fg: "#8b949e" }}>Last Deployed</text>
-                    <text style={{ fg: "#484f58" }}>{formatDate(new Date(worker().lastDeployed))}</text>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>Last Deployed</text>
+                    <text style={{ fg: THEME_COLORS.text.muted }}>{formatDate(new Date(worker().lastDeployed))}</text>
                   </box>
 
                   {/* Request volume indicator */}
                   <box marginTop={2}>
-                    <text style={{ fg: "#484f58" }}>Request volume:</text>
+                    <text style={{ fg: THEME_COLORS.text.muted }}>Request volume:</text>
                     <box marginTop={1}>
                       <text>
-                        <span style={{ fg: "#58a6ff" }}>
+                        <span style={{ fg: STATUS_COLORS.info }}>
                           {"█".repeat(Math.min(20, Math.round(worker().requests30d / (totalRequests() / 20))))}
                         </span>
-                        <span style={{ fg: "#21262d" }}>
+                        <span style={{ fg: THEME_COLORS.background.tertiary }}>
                           {"░".repeat(Math.max(0, 20 - Math.min(20, Math.round(worker().requests30d / (totalRequests() / 20)))))}
                         </span>
                       </text>
@@ -306,8 +307,8 @@ export function CloudflareWorkers(props: { data: DashboardData }) {
                   </box>
 
                   <Show when={worker().requests30d === 0}>
-                    <box marginTop={2} padding={1} backgroundColor="#21262d" borderColor="#d29922" border>
-                      <text style={{ fg: "#d29922" }}>⚠ Idle worker (no requests)</text>
+                    <box marginTop={2} padding={1} backgroundColor={THEME_COLORS.background.tertiary} borderColor={FINDING_COLORS.warning} border>
+                      <text style={{ fg: FINDING_COLORS.warning }}>⚠ Idle worker (no requests)</text>
                     </box>
                   </Show>
                 </box>
@@ -324,16 +325,16 @@ export function CloudflareWorkers(props: { data: DashboardData }) {
         flexDirection="row"
         gap={2}
       >
-        <text style={{ fg: "#484f58" }}>
-          <span style={{ fg: "#58a6ff" }}>{sortedWorkers().length}</span> worker{sortedWorkers().length !== 1 ? "s" : ""}
+        <text style={{ fg: THEME_COLORS.text.muted }}>
+          <span style={{ fg: STATUS_COLORS.info }}>{sortedWorkers().length}</span> worker{sortedWorkers().length !== 1 ? "s" : ""}
         </text>
-        <text style={{ fg: "#30363d" }}>|</text>
-        <text style={{ fg: "#484f58" }}>
-          Total requests: <span style={{ fg: "#58a6ff" }}>{formatNumber(totalRequests())}</span>
+        <text style={{ fg: THEME_COLORS.border.default }}>|</text>
+        <text style={{ fg: THEME_COLORS.text.muted }}>
+          Total requests: <span style={{ fg: STATUS_COLORS.info }}>{formatNumber(totalRequests())}</span>
         </text>
-        <text style={{ fg: "#30363d" }}>|</text>
-        <text style={{ fg: "#484f58" }}>
-          Est. cost: <span style={{ fg: "#f38020" }}>{formatCurrency(totalCost())}</span>
+        <text style={{ fg: THEME_COLORS.border.default }}>|</text>
+        <text style={{ fg: THEME_COLORS.text.muted }}>
+          Est. cost: <span style={{ fg: PROVIDER_COLORS.cloudflare.primary }}>{formatCurrency(totalCost())}</span>
         </text>
       </box>
     </box>
