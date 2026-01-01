@@ -1,18 +1,19 @@
 import { Box, Text } from "@opentui/solid"
+import { BRAND_COLORS, THEME_COLORS } from "../../constants/colors"
 
 export function OwlLogo() {
   return (
     <box flexDirection="column" alignItems="center">
-      <text style={{ fg: "#a78bfa" }}>
+      <text style={{ fg: BRAND_COLORS.owlPurple }}>
         {"    ___"}
       </text>
-      <text style={{ fg: "#a78bfa" }}>
+      <text style={{ fg: BRAND_COLORS.owlPurple }}>
         {"   {o,o}"}
       </text>
-      <text style={{ fg: "#8b5cf6" }}>
+      <text style={{ fg: BRAND_COLORS.purpleDark }}>
         {"   |)__)"}
       </text>
-      <text style={{ fg: "#7c3aed" }}>
+      <text style={{ fg: BRAND_COLORS.sightPurple }}>
         {"   -\"-\"-"}
       </text>
     </box>
@@ -23,16 +24,16 @@ export function OwlLogo() {
 export function OwlLogoLarge() {
   return (
     <box flexDirection="column" alignItems="center">
-      <text style={{ fg: "#a78bfa" }}>{"       ___     "}</text>
-      <text style={{ fg: "#a78bfa" }}>{"      /   \\    "}</text>
-      <text style={{ fg: "#ddd6fe" }}>{"     / O O \\   "}</text>
-      <text style={{ fg: "#c4b5fd" }}>{"    /  ___  \\  "}</text>
-      <text style={{ fg: "#a78bfa" }}>{"   /  /   \\  \\ "}</text>
-      <text style={{ fg: "#8b5cf6" }}>{"  (  (     )  )"}</text>
-      <text style={{ fg: "#7c3aed" }}>{"   \\  \\___/  / "}</text>
-      <text style={{ fg: "#6d28d9" }}>{"    \\_______/  "}</text>
-      <text style={{ fg: "#5b21b6" }}>{"      |   |    "}</text>
-      <text style={{ fg: "#4c1d95" }}>{"     _|   |_   "}</text>
+      <text style={{ fg: BRAND_COLORS.owlPurple }}>{"       ___     "}</text>
+      <text style={{ fg: BRAND_COLORS.owlPurple }}>{"      /   \\    "}</text>
+      <text style={{ fg: BRAND_COLORS.purpleLight }}>{"     / O O \\   "}</text>
+      <text style={{ fg: BRAND_COLORS.purpleMedium }}>{"    /  ___  \\  "}</text>
+      <text style={{ fg: BRAND_COLORS.owlPurple }}>{"   /  /   \\  \\ "}</text>
+      <text style={{ fg: BRAND_COLORS.purpleDark }}>{"  (  (     )  )"}</text>
+      <text style={{ fg: BRAND_COLORS.sightPurple }}>{"   \\  \\___/  / "}</text>
+      <text style={{ fg: BRAND_COLORS.purpleDarker }}>{"    \\_______/  "}</text>
+      <text style={{ fg: BRAND_COLORS.purpleDarkest }}>{"      |   |    "}</text>
+      <text style={{ fg: BRAND_COLORS.purpleVeryDark }}>{"     _|   |_   "}</text>
     </box>
   )
 }
@@ -41,34 +42,34 @@ export function OwlLogoLarge() {
 export function OwlLogoWithGlasses() {
   return (
     <box flexDirection="column" alignItems="center">
-      <text style={{ fg: "#8b949e", fontSize: 10 }}>
+      <text style={{ fg: THEME_COLORS.text.secondary, fontSize: 10 }}>
         {"          ^___^          "}
       </text>
-      <text style={{ fg: "#a78bfa" }}>
+      <text style={{ fg: BRAND_COLORS.owlPurple }}>
         {"         /     \\         "}
       </text>
-      <text style={{ fg: "#ddd6fe" }}>
+      <text style={{ fg: BRAND_COLORS.purpleLight }}>
         {"        | O   O |        "}
       </text>
-      <text style={{ fg: "#8b5cf6" }}>
+      <text style={{ fg: BRAND_COLORS.purpleDark }}>
         {"       ┌─────────┐       "}
       </text>
-      <text style={{ fg: "#8b5cf6" }}>
+      <text style={{ fg: BRAND_COLORS.purpleDark }}>
         {"       │  ◉ ◉  │       "}
       </text>
-      <text style={{ fg: "#8b5cf6" }}>
+      <text style={{ fg: BRAND_COLORS.purpleDark }}>
         {"       └─────────┘       "}
       </text>
-      <text style={{ fg: "#c4b5fd" }}>
+      <text style={{ fg: BRAND_COLORS.purpleMedium }}>
         {"         \\  v  /         "}
       </text>
-      <text style={{ fg: "#a78bfa" }}>
+      <text style={{ fg: BRAND_COLORS.owlPurple }}>
         {"          \\ | /          "}
       </text>
-      <text style={{ fg: "#7c3aed" }}>
+      <text style={{ fg: BRAND_COLORS.sightPurple }}>
         {"         (  )  )         "}
       </text>
-      <text style={{ fg: "#6d28d9" }}>
+      <text style={{ fg: BRAND_COLORS.purpleDarker }}>
         {"          \\___/          "}
       </text>
     </box>

@@ -1,4 +1,5 @@
 import { For } from "solid-js"
+import { THEME_COLORS, PROVIDER_COLORS } from "../../constants/colors"
 
 interface Column<T = any> {
   key: string
@@ -24,14 +25,14 @@ export function Table<T>(props: TableProps<T>) {
     <>
       <box
         flexDirection="row"
-        backgroundColor="#21262d"
+        backgroundColor={THEME_COLORS.background.tertiary}
         paddingLeft={1}
         paddingRight={1}
         height={1}
       >
         <For each={props.columns}>
           {(col) => (
-            <text width={col.width} style={{ fg: "#8b949e" }}>
+            <text width={col.width} style={{ fg: THEME_COLORS.text.secondary }}>
               <b>{col.label}</b>
             </text>
           )}
@@ -42,8 +43,8 @@ export function Table<T>(props: TableProps<T>) {
         {(row, idx) => {
           const bgColor = props.alternatingColors
             ? idx() % 2 === 0
-              ? "#0d1117"
-              : "#161b22"
+              ? THEME_COLORS.background.primary
+              : THEME_COLORS.background.secondary
             : "transparent"
           const isSelected = props.selectedIndex === idx()
 
@@ -53,14 +54,14 @@ export function Table<T>(props: TableProps<T>) {
               paddingLeft={1}
               paddingRight={1}
               height={1}
-              backgroundColor={isSelected ? "#21262d" : bgColor}
+              backgroundColor={isSelected ? THEME_COLORS.background.tertiary : bgColor}
               onClick={() => props.onSelect?.(idx())}
             >
               <For each={props.columns}>
                 {(col) => {
                   const value = (row as any)[col.key]
                   const displayValue = col.render ? col.render(value, row) : value
-                  const color = col.color ? col.color(value, row) : "#c9d1d9"
+                  const color = col.color ? col.color(value, row) : THEME_COLORS.text.primary
 
                   return (
                     <text width={col.width} style={{ fg: color }}>
@@ -77,18 +78,18 @@ export function Table<T>(props: TableProps<T>) {
       {props.showTotal && props.totalRow && (
         <box
           flexDirection="row"
-          backgroundColor="#21262d"
+          backgroundColor={THEME_COLORS.background.tertiary}
           paddingLeft={1}
           paddingRight={1}
           height={1}
-          borderColor="#30363d"
+          borderColor={THEME_COLORS.border.default}
           border={["top"]}
         >
           <For each={props.columns}>
             {(col) => {
               const value = props.totalRow![col.key]
               const displayValue = col.render ? col.render(value, props.totalRow!) : value
-              const color = col.color ? col.color(value, props.totalRow!) : "#ff9900"
+              const color = col.color ? col.color(value, props.totalRow!) : PROVIDER_COLORS.aws.primary
 
               return (
                 <text width={col.width} style={{ fg: color }}>

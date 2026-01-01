@@ -1,6 +1,7 @@
 import { createSignal, createMemo, For, Show } from "solid-js"
 import { useKeyboard } from "@opentui/solid"
 import type { DashboardData, ServiceCost } from "../../providers/aws/client"
+import { THEME_COLORS, PROVIDER_COLORS, STATUS_COLORS, FINDING_COLORS } from "../../constants/colors"
 
 // Service categories for grouping
 const SERVICE_CATEGORIES: Record<string, string[]> = {
@@ -76,10 +77,10 @@ export function ServicesTab(props: { data: DashboardData }) {
   }
   
   const getBarColor = (percentage: number, isSelected: boolean) => {
-    if (isSelected) return "#ff9900"
-    if (percentage > 30) return "#f85149"
-    if (percentage > 15) return "#d29922"
-    return "#58a6ff"
+    if (isSelected) return PROVIDER_COLORS.aws.primary
+    if (percentage > 30) return FINDING_COLORS.error
+    if (percentage > 15) return FINDING_COLORS.warning
+    return STATUS_COLORS.info
   }
 
   return (
@@ -88,15 +89,15 @@ export function ServicesTab(props: { data: DashboardData }) {
       <box 
         flexDirection="row" 
         height={2}
-        backgroundColor="#161b22"
-        borderColor="#30363d"
+        backgroundColor={THEME_COLORS.background.secondary}
+        borderColor={THEME_COLORS.border.default}
         border={["bottom"]}
         paddingLeft={1}
         paddingRight={1}
         alignItems="center"
         gap={1}
       >
-        <text style={{ fg: "#8b949e" }}>Profile:</text>
+        <text style={{ fg: THEME_COLORS.text.secondary }}>Profile:</text>
         <For each={profiles()}>
           {(profile) => {
             const isActive = () => selectedProfile() === profile
@@ -104,11 +105,11 @@ export function ServicesTab(props: { data: DashboardData }) {
               <box 
                 paddingLeft={1}
                 paddingRight={1}
-                backgroundColor={isActive() ? "#21262d" : "transparent"}
-                borderColor={isActive() ? "#ff9900" : "transparent"}
+                backgroundColor={isActive() ? THEME_COLORS.background.tertiary : "transparent"}
+                borderColor={isActive() ? PROVIDER_COLORS.aws.primary : "transparent"}
                 border={isActive() ? ["bottom"] : undefined}
               >
-                <text style={{ fg: isActive() ? "#ff9900" : "#8b949e" }}>
+                <text style={{ fg: isActive() ? PROVIDER_COLORS.aws.primary : THEME_COLORS.text.secondary }}>
                   {profile === "all" ? "All" : profile}
                 </text>
               </box>
@@ -116,9 +117,9 @@ export function ServicesTab(props: { data: DashboardData }) {
           }}
         </For>
         <box flexGrow={1} />
-        <text style={{ fg: "#484f58" }}>
-          <span style={{ fg: "#8b949e" }}>h/l</span> profile  
-          <span style={{ fg: "#8b949e" }}>j/k</span> select
+        <text style={{ fg: THEME_COLORS.text.muted }}>
+          <span style={{ fg: THEME_COLORS.text.secondary }}>h/l</span> profile  
+          <span style={{ fg: THEME_COLORS.text.secondary }}>j/k</span> select
         </text>
       </box>
       
@@ -128,7 +129,7 @@ export function ServicesTab(props: { data: DashboardData }) {
         <box 
           border 
           borderStyle="rounded" 
-          borderColor="#30363d"
+          borderColor={THEME_COLORS.border.default}
           flexDirection="column"
           flexGrow={2}
           title=" Cost by Service "
@@ -137,15 +138,15 @@ export function ServicesTab(props: { data: DashboardData }) {
           {/* Header */}
           <box 
             flexDirection="row" 
-            backgroundColor="#21262d"
+            backgroundColor={THEME_COLORS.background.tertiary}
             paddingLeft={1}
             paddingRight={1}
             height={1}
           >
-            <text width={24} style={{ fg: "#8b949e" }}><b>Service</b></text>
-            <text width={10} style={{ fg: "#8b949e" }}><b>Cost</b></text>
-            <text width={7} style={{ fg: "#8b949e" }}><b>%</b></text>
-            <text style={{ fg: "#8b949e" }}><b>Distribution</b></text>
+            <text width={24} style={{ fg: THEME_COLORS.text.secondary }}><b>Service</b></text>
+            <text width={10} style={{ fg: THEME_COLORS.text.secondary }}><b>Cost</b></text>
+            <text width={7} style={{ fg: THEME_COLORS.text.secondary }}><b>%</b></text>
+            <text style={{ fg: THEME_COLORS.text.secondary }}><b>Distribution</b></text>
           </box>
           
           {/* Scrollable content */}
@@ -166,11 +167,11 @@ export function ServicesTab(props: { data: DashboardData }) {
                     paddingLeft={1}
                     paddingRight={1}
                     height={1}
-                    backgroundColor={isSelected() ? "#21262d" : "transparent"}
+                    backgroundColor={isSelected() ? THEME_COLORS.background.tertiary : "transparent"}
                   >
                     <text 
                       width={24} 
-                      style={{ fg: isSelected() ? "#c9d1d9" : "#8b949e" }}
+                      style={{ fg: isSelected() ? THEME_COLORS.text.primary : THEME_COLORS.text.secondary }}
                     >
                       {svc.service.length > 22 
                         ? svc.service.slice(0, 20) + ".." 
@@ -178,19 +179,19 @@ export function ServicesTab(props: { data: DashboardData }) {
                     </text>
                     <text 
                       width={10} 
-                      style={{ fg: isSelected() ? "#ff9900" : "#8b949e" }}
+                      style={{ fg: isSelected() ? PROVIDER_COLORS.aws.primary : THEME_COLORS.text.secondary }}
                     >
                       {formatCurrency(svc.cost)}
                     </text>
                     <text 
                       width={7} 
-                      style={{ fg: "#484f58" }}
+                      style={{ fg: THEME_COLORS.text.muted }}
                     >
                       {svc.percentage.toFixed(1)}%
                     </text>
                     <text>
                       <span style={{ fg: color }}>{"█".repeat(barWidth)}</span>
-                      <span style={{ fg: "#21262d" }}>{"░".repeat(28 - barWidth)}</span>
+                      <span style={{ fg: THEME_COLORS.background.tertiary }}>{"░".repeat(28 - barWidth)}</span>
                     </text>
                   </box>
                 )
@@ -203,7 +204,7 @@ export function ServicesTab(props: { data: DashboardData }) {
         <box 
           border 
           borderStyle="rounded" 
-          borderColor="#30363d"
+          borderColor={THEME_COLORS.border.default}
           flexDirection="column"
           width={30}
           title=" Details "
@@ -213,7 +214,7 @@ export function ServicesTab(props: { data: DashboardData }) {
             when={services()[selectedIndex()]}
             fallback={
               <box padding={1}>
-                <text style={{ fg: "#484f58" }}>Select a service</text>
+                <text style={{ fg: THEME_COLORS.text.muted }}>Select a service</text>
               </box>
             }
           >
@@ -221,30 +222,30 @@ export function ServicesTab(props: { data: DashboardData }) {
               const svc = () => services()[selectedIndex()]!
               return (
                 <box flexDirection="column" padding={1} gap={1}>
-                  <text style={{ fg: "#ff9900" }}><b>{svc().service}</b></text>
+                  <text style={{ fg: PROVIDER_COLORS.aws.primary }}><b>{svc().service}</b></text>
                   
                   <box marginTop={1}>
-                    <text style={{ fg: "#8b949e" }}>Cost</text>
-                    <text style={{ fg: "#c9d1d9" }}>{formatCurrency(svc().cost)}</text>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>Cost</text>
+                    <text style={{ fg: THEME_COLORS.text.primary }}>{formatCurrency(svc().cost)}</text>
                   </box>
                   
                   <box>
-                    <text style={{ fg: "#8b949e" }}>% of Total</text>
-                    <text style={{ fg: "#c9d1d9" }}>{svc().percentage.toFixed(2)}%</text>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>% of Total</text>
+                    <text style={{ fg: THEME_COLORS.text.primary }}>{svc().percentage.toFixed(2)}%</text>
                   </box>
                   
                   <box marginTop={1}>
-                    <text style={{ fg: "#8b949e" }}>Rank</text>
-                    <text style={{ fg: "#58a6ff" }}>#{selectedIndex() + 1} of {services().length}</text>
+                    <text style={{ fg: THEME_COLORS.text.secondary }}>Rank</text>
+                    <text style={{ fg: STATUS_COLORS.info }}>#{selectedIndex() + 1} of {services().length}</text>
                   </box>
                   
                   {/* Visual percentage bar */}
                   <box marginTop={2}>
-                    <text style={{ fg: "#484f58" }}>Share of spend:</text>
+                    <text style={{ fg: THEME_COLORS.text.muted }}>Share of spend:</text>
                     <box marginTop={1}>
                       <text>
-                        <span style={{ fg: "#ff9900" }}>{"█".repeat(Math.round(svc().percentage / 5))}</span>
-                        <span style={{ fg: "#21262d" }}>{"░".repeat(20 - Math.round(svc().percentage / 5))}</span>
+                        <span style={{ fg: PROVIDER_COLORS.aws.primary }}>{"█".repeat(Math.round(svc().percentage / 5))}</span>
+                        <span style={{ fg: THEME_COLORS.background.tertiary }}>{"░".repeat(20 - Math.round(svc().percentage / 5))}</span>
                       </text>
                     </box>
                   </box>
@@ -262,13 +263,13 @@ export function ServicesTab(props: { data: DashboardData }) {
         flexDirection="row"
         gap={2}
       >
-        <text style={{ fg: "#484f58" }}>
-          Showing <span style={{ fg: "#58a6ff" }}>{services().length}</span> services
+        <text style={{ fg: THEME_COLORS.text.muted }}>
+          Showing <span style={{ fg: STATUS_COLORS.info }}>{services().length}</span> services
           {selectedProfile() !== "all" ? ` for ${selectedProfile()}` : ""}
         </text>
-        <text style={{ fg: "#30363d" }}>|</text>
-        <text style={{ fg: "#484f58" }}>
-          Total: <span style={{ fg: "#ff9900" }}>{formatCurrency(totalCost())}</span>
+        <text style={{ fg: THEME_COLORS.border.default }}>|</text>
+        <text style={{ fg: THEME_COLORS.text.muted }}>
+          Total: <span style={{ fg: PROVIDER_COLORS.aws.primary }}>{formatCurrency(totalCost())}</span>
         </text>
       </box>
     </box>

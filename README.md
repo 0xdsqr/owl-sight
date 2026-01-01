@@ -49,3 +49,41 @@ Otherwise, ensure you have Bun installed and run:
 bun install
 cd packages/tui && bun run dev
 ```
+
+## Testing
+
+The project includes comprehensive tests for utility functions, component logic, and AWS client functions. Tests are written using Bun's built-in test runner.
+
+### Running Tests
+
+From the project root:
+
+```bash
+# Run all tests
+cd packages/tui && bun test
+
+# Run tests in watch mode (auto-rerun on file changes)
+cd packages/tui && bun test --watch
+
+# Generate coverage report
+cd packages/tui && bun test --coverage
+```
+
+Or use the npm scripts from the `packages/tui` directory:
+
+```bash
+cd packages/tui
+bun run test          # Run all tests
+bun run test:watch    # Watch mode
+bun run test:coverage # Coverage report
+```
+
+### Test Structure
+
+Tests are organized in `__tests__` directories alongside the source files:
+
+- `src/utils/__tests__/` - Tests for utility functions (formatters, etc.)
+- `src/components/aws/__tests__/` - Tests for component logic
+- `src/providers/aws/__tests__/` - Tests for AWS client functions with mocked responses
+
+Test utilities and mock data factories are available in `src/__test-utils__/`.

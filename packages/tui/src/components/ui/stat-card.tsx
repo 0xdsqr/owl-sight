@@ -1,3 +1,5 @@
+import { THEME_COLORS } from "../../constants/colors"
+
 interface StatCardProps {
   label: string
   value: string | number
@@ -9,8 +11,8 @@ interface StatCardProps {
 export function StatCard(props: StatCardProps) {
   return (
     <box flexDirection="column" flexGrow={props.flexGrow ?? 1}>
-      <text style={{ fg: "#8b949e" }}>{props.label}</text>
-      <text style={{ fg: props.color ?? "#c9d1d9" }}>
+      <text style={{ fg: THEME_COLORS.text.secondary }}>{props.label}</text>
+      <text style={{ fg: props.color ?? THEME_COLORS.text.primary }}>
         {props.icon && <span>{props.icon} </span>}
         <b>{props.value}</b>
       </text>

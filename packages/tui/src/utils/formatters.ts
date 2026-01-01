@@ -18,9 +18,11 @@ export function formatNumber(num: number): string {
   return num.toString()
 }
 
+import { FINDING_COLORS, STATUS_COLORS, THEME_COLORS } from "../constants/colors"
+
 export function formatChange(change: number): { text: string; color: string; arrow: string } {
   const arrow = change > 0 ? "^" : change < 0 ? "v" : "-"
-  const color = change > 5 ? "#f85149" : change < -5 ? "#7ee787" : "#8b949e"
+  const color = change > 5 ? FINDING_COLORS.error : change < -5 ? STATUS_COLORS.success : THEME_COLORS.text.secondary
   return { text: `${arrow}${Math.abs(change).toFixed(1)}%`, color, arrow }
 }
 

@@ -1,4 +1,5 @@
 import { ProgressBar } from "../ui/progress-bar"
+import { PROVIDER_COLORS, THEME_COLORS } from "../../constants/colors"
 
 type Provider = "aws" | "cloudflare"
 
@@ -14,7 +15,7 @@ interface LoadingIndicatorProps {
 }
 
 export function LoadingIndicator(props: LoadingIndicatorProps) {
-  const accentColor = () => (props.provider === "aws" ? "#ff9900" : "#f38020")
+  const accentColor = () => (props.provider === "aws" ? PROVIDER_COLORS.aws.primary : PROVIDER_COLORS.cloudflare.primary)
 
   return (
     <box
@@ -26,8 +27,8 @@ export function LoadingIndicator(props: LoadingIndicatorProps) {
       <box
         border
         borderStyle="rounded"
-        borderColor="#30363d"
-        backgroundColor="#161b22"
+        borderColor={THEME_COLORS.border.default}
+        backgroundColor={THEME_COLORS.background.secondary}
         padding={3}
         flexDirection="column"
         alignItems="center"
@@ -40,7 +41,7 @@ export function LoadingIndicator(props: LoadingIndicatorProps) {
               : "Loading Cloudflare Data"}
           </b>
         </text>
-        <text style={{ fg: "#8b949e" }} marginTop={1}>
+        <text style={{ fg: THEME_COLORS.text.secondary }} marginTop={1}>
           {props.state.message}
         </text>
         <box marginTop={1}>

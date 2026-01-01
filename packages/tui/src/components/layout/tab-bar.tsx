@@ -1,4 +1,5 @@
 import { For } from "solid-js"
+import { PROVIDER_COLORS, THEME_COLORS } from "../../constants/colors"
 
 type Provider = "aws" | "cloudflare"
 
@@ -16,14 +17,14 @@ interface TabBarProps {
 }
 
 export function TabBar(props: TabBarProps) {
-  const accentColor = () => (props.provider === "aws" ? "#ff9900" : "#f38020")
+  const accentColor = () => (props.provider === "aws" ? PROVIDER_COLORS.aws.primary : PROVIDER_COLORS.cloudflare.primary)
 
   return (
     <box
       height={1}
       flexDirection="row"
-      backgroundColor="#161b22"
-      borderColor="#30363d"
+      backgroundColor={THEME_COLORS.background.secondary}
+      borderColor={THEME_COLORS.border.default}
       border={["bottom"]}
       paddingLeft={1}
     >
@@ -35,11 +36,11 @@ export function TabBar(props: TabBarProps) {
               paddingLeft={1}
               paddingRight={1}
               height={1}
-              backgroundColor={isActive() ? "#21262d" : "transparent"}
+              backgroundColor={isActive() ? THEME_COLORS.background.tertiary : "transparent"}
             >
-              <text style={{ fg: isActive() ? accentColor() : "#8b949e" }}>
-                <span style={{ fg: "#484f58" }}>{tab.key}</span>
-                <span style={{ fg: isActive() ? "#c9d1d9" : "#8b949e" }}>
+              <text style={{ fg: isActive() ? accentColor() : THEME_COLORS.text.secondary }}>
+                <span style={{ fg: THEME_COLORS.text.muted }}>{tab.key}</span>
+                <span style={{ fg: isActive() ? THEME_COLORS.text.primary : THEME_COLORS.text.secondary }}>
                   {" "}
                   {tab.name}
                 </span>

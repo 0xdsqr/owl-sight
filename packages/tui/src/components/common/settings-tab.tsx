@@ -1,5 +1,6 @@
 import { For, Show, createSignal, createMemo } from "solid-js"
 import { useKeyboard } from "@opentui/solid"
+import { THEME_COLORS, PROVIDER_COLORS, STATUS_COLORS, FINDING_COLORS } from "../../constants/colors"
 
 type Provider = "aws" | "cloudflare"
 
@@ -187,7 +188,7 @@ export function SettingsTab(props: SettingsProps) {
               flexDirection="column"
               border
               borderStyle="rounded"
-              borderColor={focusSection() === "profiles" ? "#ff9900" : "#30363d"}
+              borderColor={focusSection() === "profiles" ? PROVIDER_COLORS.aws.primary : THEME_COLORS.border.default}
               title=" AWS Profiles "
               titleAlignment="left"
               paddingLeft={1}
@@ -199,7 +200,7 @@ export function SettingsTab(props: SettingsProps) {
               <Show
                 when={props.availableProfiles.length > 0}
                 fallback={
-                  <text style={{ fg: "#484f58" }}>
+                  <text style={{ fg: THEME_COLORS.text.muted }}>
                     No AWS profiles found. Configure with 'aws configure --profile name'
                   </text>
                 }
@@ -211,11 +212,11 @@ export function SettingsTab(props: SettingsProps) {
                     return (
                       <box
                         flexDirection="row"
-                        backgroundColor={isFocused() ? "#21262d" : "transparent"}
+                        backgroundColor={isFocused() ? THEME_COLORS.background.tertiary : "transparent"}
                         paddingLeft={1}
                         height={1}
                       >
-                        <text style={{ fg: isSelected() ? "#7ee787" : "#484f58" }}>
+                        <text style={{ fg: isSelected() ? STATUS_COLORS.success : THEME_COLORS.text.muted }}>
                           {isSelected() ? "[x]" : "[ ]"} {profile}
                         </text>
                       </box>
@@ -230,7 +231,7 @@ export function SettingsTab(props: SettingsProps) {
               flexDirection="column"
               border
               borderStyle="rounded"
-              borderColor={focusSection() === "regions" ? "#ff9900" : "#30363d"}
+              borderColor={focusSection() === "regions" ? PROVIDER_COLORS.aws.primary : THEME_COLORS.border.default}
               title=" AWS Regions "
               titleAlignment="left"
               paddingLeft={1}
@@ -247,11 +248,11 @@ export function SettingsTab(props: SettingsProps) {
                     return (
                       <box
                         flexDirection="row"
-                        backgroundColor={isFocused() ? "#21262d" : "transparent"}
+                        backgroundColor={isFocused() ? THEME_COLORS.background.tertiary : "transparent"}
                         paddingLeft={1}
                         height={1}
                       >
-                        <text style={{ fg: isSelected() ? "#7ee787" : "#484f58" }}>
+                        <text style={{ fg: isSelected() ? STATUS_COLORS.success : THEME_COLORS.text.muted }}>
                           {isSelected() ? "[x]" : "[ ]"} {region}
                         </text>
                       </box>
@@ -269,7 +270,7 @@ export function SettingsTab(props: SettingsProps) {
               flexDirection="column"
               border
               borderStyle="rounded"
-              borderColor={focusSection() === "time" ? "#ff9900" : "#30363d"}
+              borderColor={focusSection() === "time" ? PROVIDER_COLORS.aws.primary : THEME_COLORS.border.default}
               title=" Time Range "
               titleAlignment="left"
               paddingLeft={1}
@@ -284,11 +285,11 @@ export function SettingsTab(props: SettingsProps) {
                   return (
                     <box
                       flexDirection="row"
-                      backgroundColor={isFocused() ? "#21262d" : "transparent"}
+                      backgroundColor={isFocused() ? THEME_COLORS.background.tertiary : "transparent"}
                       paddingLeft={1}
                       height={1}
                     >
-                      <text style={{ fg: isSelected() ? "#7ee787" : "#484f58" }}>
+                      <text style={{ fg: isSelected() ? STATUS_COLORS.success : THEME_COLORS.text.muted }}>
                         {isSelected() ? "(o)" : "( )"} {option.label}
                       </text>
                     </box>
@@ -302,7 +303,7 @@ export function SettingsTab(props: SettingsProps) {
               flexDirection="column"
               border
               borderStyle="rounded"
-              borderColor="#30363d"
+              borderColor={THEME_COLORS.border.default}
               title=" API Usage "
               titleAlignment="left"
               paddingLeft={1}
@@ -310,13 +311,13 @@ export function SettingsTab(props: SettingsProps) {
               paddingTop={1}
               paddingBottom={1}
             >
-              <text style={{ fg: "#8b949e" }}>
-                Cost Explorer: <span style={{ fg: "#d29922" }}>$0.01/call</span>
+              <text style={{ fg: THEME_COLORS.text.secondary }}>
+                Cost Explorer: <span style={{ fg: FINDING_COLORS.warning }}>$0.01/call</span>
               </text>
-              <text style={{ fg: "#484f58" }} marginTop={1}>
+              <text style={{ fg: THEME_COLORS.text.muted }} marginTop={1}>
                 ~2-3 API calls per profile
               </text>
-              <text style={{ fg: "#484f58" }}>
+              <text style={{ fg: THEME_COLORS.text.muted }}>
                 EC2, Budgets, STS: Free tier
               </text>
             </box>
@@ -326,7 +327,7 @@ export function SettingsTab(props: SettingsProps) {
               flexDirection="column"
               border
               borderStyle="rounded"
-              borderColor="#30363d"
+              borderColor={THEME_COLORS.border.default}
               title=" About "
               titleAlignment="left"
               paddingLeft={1}
@@ -335,12 +336,12 @@ export function SettingsTab(props: SettingsProps) {
               paddingBottom={1}
               flexGrow={1}
             >
-              <text style={{ fg: "#ff9900" }}><b>owl-sight v0.1.0</b></text>
-              <text style={{ fg: "#8b949e" }}>Cloud cost monitoring TUI</text>
-              <text style={{ fg: "#484f58" }} marginTop={1}>Built with:</text>
-              <text style={{ fg: "#484f58" }}>- OpenTUI + SolidJS</text>
-              <text style={{ fg: "#484f58" }}>- AWS SDK v3</text>
-              <text style={{ fg: "#484f58" }}>- Cloudflare SDK</text>
+              <text style={{ fg: PROVIDER_COLORS.aws.primary }}><b>owl-sight v0.1.0</b></text>
+              <text style={{ fg: THEME_COLORS.text.secondary }}>Cloud cost monitoring TUI</text>
+              <text style={{ fg: THEME_COLORS.text.muted }} marginTop={1}>Built with:</text>
+              <text style={{ fg: THEME_COLORS.text.muted }}>- OpenTUI + SolidJS</text>
+              <text style={{ fg: THEME_COLORS.text.muted }}>- AWS SDK v3</text>
+              <text style={{ fg: THEME_COLORS.text.muted }}>- Cloudflare SDK</text>
             </box>
           </box>
         </box>
@@ -355,7 +356,7 @@ export function SettingsTab(props: SettingsProps) {
               flexDirection="column"
               border
               borderStyle="rounded"
-              borderColor="#30363d"
+              borderColor={THEME_COLORS.border.default}
               title=" Cloudflare Configuration "
               titleAlignment="left"
               paddingLeft={2}
@@ -364,30 +365,30 @@ export function SettingsTab(props: SettingsProps) {
               paddingBottom={2}
               flexGrow={1}
             >
-              <text style={{ fg: "#f38020" }}><b>API Token</b></text>
-              <text style={{ fg: "#8b949e" }} marginTop={1}>
+              <text style={{ fg: PROVIDER_COLORS.cloudflare.primary }}><b>API Token</b></text>
+              <text style={{ fg: THEME_COLORS.text.secondary }} marginTop={1}>
                 Status: {props.settings.cloudflareToken ?
-                  <span style={{ fg: "#7ee787" }}>Configured</span> :
-                  <span style={{ fg: "#f85149" }}>Not configured</span>
+                  <span style={{ fg: STATUS_COLORS.success }}>Configured</span> :
+                  <span style={{ fg: FINDING_COLORS.error }}>Not configured</span>
                 }
               </text>
 
-              <box marginTop={2} padding={1} backgroundColor="#161b22" borderColor="#30363d" border>
-                <text style={{ fg: "#484f58" }}>Set via environment:</text>
-                <text style={{ fg: "#8b949e" }} marginTop={1}>
+              <box marginTop={2} padding={1} backgroundColor={THEME_COLORS.background.secondary} borderColor={THEME_COLORS.border.default} border>
+                <text style={{ fg: THEME_COLORS.text.muted }}>Set via environment:</text>
+                <text style={{ fg: THEME_COLORS.text.secondary }} marginTop={1}>
                   export CLOUDFLARE_API_TOKEN="your-token"
                 </text>
               </box>
 
-              <text style={{ fg: "#f38020" }} marginTop={3}><b>Account IDs</b></text>
-              <text style={{ fg: "#8b949e" }} marginTop={1}>
+              <text style={{ fg: PROVIDER_COLORS.cloudflare.primary }} marginTop={3}><b>Account IDs</b></text>
+              <text style={{ fg: THEME_COLORS.text.secondary }} marginTop={1}>
                 Accounts: {(props.settings.cloudflareAccountIds?.length ?? 0) === 0 ?
-                  <span style={{ fg: "#d29922" }}>Auto-discover</span> :
-                  <span style={{ fg: "#7ee787" }}>{props.settings.cloudflareAccountIds?.length}</span>
+                  <span style={{ fg: FINDING_COLORS.warning }}>Auto-discover</span> :
+                  <span style={{ fg: STATUS_COLORS.success }}>{props.settings.cloudflareAccountIds?.length}</span>
                 }
               </text>
 
-              <text style={{ fg: "#484f58" }} marginTop={2}>
+              <text style={{ fg: THEME_COLORS.text.muted }} marginTop={2}>
                 Cloudflare settings are configured via environment variables and cannot be edited here.
               </text>
             </box>
@@ -397,7 +398,7 @@ export function SettingsTab(props: SettingsProps) {
               flexDirection="column"
               border
               borderStyle="rounded"
-              borderColor="#30363d"
+              borderColor={THEME_COLORS.border.default}
               title=" About "
               titleAlignment="left"
               paddingLeft={1}
@@ -405,12 +406,12 @@ export function SettingsTab(props: SettingsProps) {
               paddingTop={1}
               paddingBottom={1}
             >
-              <text style={{ fg: "#f38020" }}><b>owl-sight v0.1.0</b></text>
-              <text style={{ fg: "#8b949e" }}>Cloud cost monitoring TUI</text>
-              <text style={{ fg: "#484f58" }} marginTop={1}>Built with:</text>
-              <text style={{ fg: "#484f58" }}>- OpenTUI + SolidJS</text>
-              <text style={{ fg: "#484f58" }}>- AWS SDK v3</text>
-              <text style={{ fg: "#484f58" }}>- Cloudflare SDK</text>
+              <text style={{ fg: PROVIDER_COLORS.cloudflare.primary }}><b>owl-sight v0.1.0</b></text>
+              <text style={{ fg: THEME_COLORS.text.secondary }}>Cloud cost monitoring TUI</text>
+              <text style={{ fg: THEME_COLORS.text.muted }} marginTop={1}>Built with:</text>
+              <text style={{ fg: THEME_COLORS.text.muted }}>- OpenTUI + SolidJS</text>
+              <text style={{ fg: THEME_COLORS.text.muted }}>- AWS SDK v3</text>
+              <text style={{ fg: THEME_COLORS.text.muted }}>- Cloudflare SDK</text>
             </box>
           </box>
         </box>
@@ -422,21 +423,21 @@ export function SettingsTab(props: SettingsProps) {
         gap={2} 
         paddingLeft={1}
         height={1}
-        borderColor="#30363d"
+        borderColor={THEME_COLORS.border.default}
         border={["top"]}
         alignItems="center"
       >
         <Show when={hasChanges()}>
-          <text style={{ fg: "#d29922" }}>[!] Unsaved changes</text>
-          <text style={{ fg: "#7ee787" }}>[a] Apply & Refresh</text>
-          <text style={{ fg: "#f85149" }}>[Esc] Reset</text>
+          <text style={{ fg: FINDING_COLORS.warning }}>[!] Unsaved changes</text>
+          <text style={{ fg: STATUS_COLORS.success }}>[a] Apply & Refresh</text>
+          <text style={{ fg: FINDING_COLORS.error }}>[Esc] Reset</text>
         </Show>
         <Show when={!hasChanges()}>
-          <text style={{ fg: "#484f58" }}>
-            <span style={{ fg: "#8b949e" }}>Tab</span> section  
-            <span style={{ fg: "#8b949e" }}>j/k</span> navigate  
-            <span style={{ fg: "#8b949e" }}>Space</span> toggle  
-            <span style={{ fg: "#8b949e" }}>a</span> apply
+          <text style={{ fg: THEME_COLORS.text.muted }}>
+            <span style={{ fg: THEME_COLORS.text.secondary }}>Tab</span> section  
+            <span style={{ fg: THEME_COLORS.text.secondary }}>j/k</span> navigate  
+            <span style={{ fg: THEME_COLORS.text.secondary }}>Space</span> toggle  
+            <span style={{ fg: THEME_COLORS.text.secondary }}>a</span> apply
           </text>
         </Show>
       </box>

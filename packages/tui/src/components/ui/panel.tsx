@@ -1,3 +1,5 @@
+import { THEME_COLORS } from "../../constants/colors"
+
 interface PanelProps {
   title?: string
   titleAlignment?: "left" | "center" | "right"
@@ -15,7 +17,7 @@ export function Panel(props: PanelProps) {
     <box
       border
       borderStyle="rounded"
-      borderColor={props.borderColor ?? "#30363d"}
+      borderColor={props.borderColor ?? THEME_COLORS.border.default}
       flexDirection="column"
       title={props.title ? ` ${props.title} ` : undefined}
       titleAlignment={props.titleAlignment ?? "left"}

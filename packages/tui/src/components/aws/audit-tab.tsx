@@ -1,21 +1,54 @@
 import { createMemo, For, Show } from "solid-js"
 import type { DashboardData, AuditFinding } from "../../providers/aws/client"
+import { FINDING_COLORS, THEME_COLORS, STATUS_COLORS } from "../../constants/colors"
+
+// Define finding type metadata with type safety
+const FINDING_TYPE_METADATA = {
+  // Existing types
+  stopped_instance: { icon: "[EC2]", label: "Stopped EC2 Instances", color: FINDING_COLORS.warning },
+  idle_instance: { icon: "[EC2]", label: "Idle EC2 Instances", color: FINDING_COLORS.warning },
+  unattached_volume: { icon: "[EBS]", label: "Unattached EBS Volumes", color: FINDING_COLORS.warningAlt },
+  unused_eip: { icon: "[EIP]", label: "Unused Elastic IPs", color: FINDING_COLORS.info },
+  budget_alert: { icon: "[BUD]", label: "Budget Alerts", color: FINDING_COLORS.error },
+  untagged: { icon: "[TAG]", label: "Untagged Resources", color: FINDING_COLORS.neutral },
+  // EKS
+  idle_eks_cluster: { icon: "[EKS]", label: "Idle EKS Clusters", color: FINDING_COLORS.warning },
+  over_provisioned_eks: { icon: "[EKS]", label: "Over-Provisioned EKS Nodes", color: FINDING_COLORS.warningAlt },
+  unused_eks_nodegroup: { icon: "[EKS]", label: "Unused EKS Node Groups", color: FINDING_COLORS.warningAlt },
+  // Transfer Family
+  idle_transfer_server: { icon: "[XFR]", label: "Idle Transfer Family Servers", color: FINDING_COLORS.warning },
+  unused_transfer_server: { icon: "[XFR]", label: "Unused Transfer Family Servers", color: FINDING_COLORS.warningAlt },
+  // SQS
+  empty_sqs_queue: { icon: "[SQS]", label: "Empty SQS Queues", color: FINDING_COLORS.info },
+  unused_sqs_queue: { icon: "[SQS]", label: "Unused SQS Queues", color: FINDING_COLORS.warningAlt },
+  dead_letter_queue: { icon: "[SQS]", label: "Dead Letter Queues with Old Messages", color: FINDING_COLORS.warning },
+  // SNS
+  unused_sns_topic: { icon: "[SNS]", label: "Unused SNS Topics", color: FINDING_COLORS.info },
+  unsubscribed_sns_topic: { icon: "[SNS]", label: "SNS Topics with No Subscriptions", color: FINDING_COLORS.warningAlt },
+} as const satisfies Record<
+  AuditFinding["type"],
+  { icon: string; label: string; color: string }
+>
+
+// Helper function to get metadata with fallback
+const getTypeMetadata = (type: AuditFinding["type"]) => {
+  return FINDING_TYPE_METADATA[type] ?? {
+    icon: "[???]",
+    label: type,
+    color: FINDING_COLORS.neutral,
+  }
+}
 
 export function AuditTab(props: { data: DashboardData }) {
-  // Group findings by type
+  // Group findings by type - type-safe and dynamic
   const groupedFindings = createMemo(() => {
-    const groups: Record<string, AuditFinding[]> = {
-      stopped_instance: [],
-      unattached_volume: [],
-      unused_eip: [],
-      budget_alert: [],
-      untagged: [],
-    }
+    const groups: Partial<Record<AuditFinding["type"], AuditFinding[]>> = {}
     
     for (const finding of props.data.audit) {
-      if (groups[finding.type]) {
-        groups[finding.type]!.push(finding)
+      if (!groups[finding.type]) {
+        groups[finding.type] = []
       }
+      groups[finding.type]!.push(finding)
     }
     
     return groups
@@ -28,38 +61,6 @@ export function AuditTab(props: { data: DashboardData }) {
   const findingCount = createMemo(() => props.data.audit.length)
   
   const formatCurrency = (amount: number) => `$${amount.toFixed(2)}`
-  
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "stopped_instance": return "[EC2]"
-      case "unattached_volume": return "[EBS]"
-      case "unused_eip": return "[EIP]"
-      case "budget_alert": return "[BUD]"
-      case "untagged": return "[TAG]"
-      default: return "[???]"
-    }
-  }
-  
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case "stopped_instance": return "Stopped EC2 Instances"
-      case "unattached_volume": return "Unattached EBS Volumes"
-      case "unused_eip": return "Unused Elastic IPs"
-      case "budget_alert": return "Budget Alerts"
-      case "untagged": return "Untagged Resources"
-      default: return type
-    }
-  }
-  
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "budget_alert": return "#f85149"
-      case "stopped_instance": return "#d29922"
-      case "unattached_volume": return "#f0883e"
-      case "unused_eip": return "#58a6ff"
-      default: return "#8b949e"
-    }
-  }
 
   return (
     <box flexDirection="column" flexGrow={1}>
@@ -69,15 +70,15 @@ export function AuditTab(props: { data: DashboardData }) {
         <box 
           border 
           borderStyle="rounded" 
-          borderColor="#30363d"
-          backgroundColor="#161b22"
+          borderColor={THEME_COLORS.border.default}
+          backgroundColor={THEME_COLORS.background.secondary}
           padding={1}
           flexGrow={1}
           flexDirection="column"
           alignItems="center"
         >
-          <text style={{ fg: "#8b949e" }}>Total Findings</text>
-          <text style={{ fg: findingCount() > 0 ? "#d29922" : "#7ee787" }} marginTop={1}>
+          <text style={{ fg: THEME_COLORS.text.secondary }}>Total Findings</text>
+          <text style={{ fg: findingCount() > 0 ? FINDING_COLORS.warning : STATUS_COLORS.success }} marginTop={1}>
             <b>{findingCount()}</b>
           </text>
         </box>
@@ -86,15 +87,15 @@ export function AuditTab(props: { data: DashboardData }) {
         <box 
           border 
           borderStyle="rounded" 
-          borderColor="#30363d"
-          backgroundColor="#161b22"
+          borderColor={THEME_COLORS.border.default}
+          backgroundColor={THEME_COLORS.background.secondary}
           padding={1}
           flexGrow={1}
           flexDirection="column"
           alignItems="center"
         >
-          <text style={{ fg: "#8b949e" }}>Est. Monthly Waste</text>
-          <text style={{ fg: totalWaste() > 0 ? "#f85149" : "#7ee787" }} marginTop={1}>
+          <text style={{ fg: THEME_COLORS.text.secondary }}>Est. Monthly Waste</text>
+          <text style={{ fg: totalWaste() > 0 ? FINDING_COLORS.error : STATUS_COLORS.success }} marginTop={1}>
             <b>{formatCurrency(totalWaste())}/mo</b>
           </text>
         </box>
@@ -103,16 +104,16 @@ export function AuditTab(props: { data: DashboardData }) {
         <box 
           border 
           borderStyle="rounded" 
-          borderColor="#30363d"
-          backgroundColor="#161b22"
+          borderColor={THEME_COLORS.border.default}
+          backgroundColor={THEME_COLORS.background.secondary}
           padding={1}
           flexGrow={1}
           flexDirection="column"
           alignItems="center"
         >
-          <text style={{ fg: "#8b949e" }}>Categories Affected</text>
-          <text style={{ fg: "#8b949e" }} marginTop={1}>
-            <b>{Object.values(groupedFindings()).filter(g => g.length > 0).length}</b> / 5
+          <text style={{ fg: THEME_COLORS.text.secondary }}>Categories Affected</text>
+          <text style={{ fg: THEME_COLORS.text.secondary }} marginTop={1}>
+            <b>{Object.keys(groupedFindings()).length}</b>
           </text>
         </box>
       </box>
@@ -121,7 +122,7 @@ export function AuditTab(props: { data: DashboardData }) {
       <box 
         border 
         borderStyle="rounded" 
-        borderColor="#30363d"
+        borderColor={THEME_COLORS.border.default}
         flexDirection="column"
         flexGrow={1}
         title=" FinOps Audit Findings "
@@ -145,51 +146,34 @@ export function AuditTab(props: { data: DashboardData }) {
                 flexGrow={1}
                 flexDirection="column"
               >
-                <text style={{ fg: "#7ee787" }}>[v] No issues found!</text>
-                <text style={{ fg: "#484f58" }} marginTop={1}>
+                <text style={{ fg: STATUS_COLORS.success }}>[v] No issues found!</text>
+                <text style={{ fg: THEME_COLORS.text.muted }} marginTop={1}>
                   Your AWS resources are well-optimized.
                 </text>
               </box>
             }
           >
-            {/* Stopped instances */}
-            <FindingSection
-              icon={getTypeIcon("stopped_instance")}
-              label={getTypeLabel("stopped_instance")}
-              color={getTypeColor("stopped_instance")}
-              findings={groupedFindings().stopped_instance ?? []}
-            />
-            
-            {/* Unattached volumes */}
-            <FindingSection
-              icon={getTypeIcon("unattached_volume")}
-              label={getTypeLabel("unattached_volume")}
-              color={getTypeColor("unattached_volume")}
-              findings={groupedFindings().unattached_volume ?? []}
-            />
-            
-            {/* Unused EIPs */}
-            <FindingSection
-              icon={getTypeIcon("unused_eip")}
-              label={getTypeLabel("unused_eip")}
-              color={getTypeColor("unused_eip")}
-              findings={groupedFindings().unused_eip ?? []}
-            />
-            
-            {/* Budget alerts */}
-            <FindingSection
-              icon={getTypeIcon("budget_alert")}
-              label={getTypeLabel("budget_alert")}
-              color={getTypeColor("budget_alert")}
-              findings={groupedFindings().budget_alert ?? []}
-            />
+            {/* Dynamically render all finding types */}
+            <For each={Object.entries(groupedFindings())}>
+              {([type, findings]) => {
+                const metadata = getTypeMetadata(type as AuditFinding["type"])
+                return (
+                  <FindingSection
+                    icon={metadata.icon}
+                    label={metadata.label}
+                    color={metadata.color}
+                    findings={findings ?? []}
+                  />
+                )
+              }}
+            </For>
           </Show>
         </scrollbox>
       </box>
       
       {/* Actions hint */}
       <box paddingTop={1} paddingLeft={1}>
-        <text style={{ fg: "#484f58" }}>
+        <text style={{ fg: THEME_COLORS.text.muted }}>
           Tip: Terminate stopped instances or delete unused resources to reduce costs
         </text>
       </box>
@@ -214,7 +198,7 @@ function FindingSection(props: {
             <b>{props.icon} {props.label} ({props.findings.length})</b>
           </text>
           <Show when={totalWaste() > 0}>
-            <text style={{ fg: "#f85149" }} marginLeft={2}>
+            <text style={{ fg: FINDING_COLORS.error }} marginLeft={2}>
               Est. ${totalWaste().toFixed(2)}/mo
             </text>
           </Show>
@@ -228,18 +212,18 @@ function FindingSection(props: {
               paddingLeft={2}
               height={1}
             >
-              <text style={{ fg: "#484f58" }}>|- </text>
-              <text style={{ fg: "#8b949e" }} width={20}>
+              <text style={{ fg: THEME_COLORS.text.muted }}>|- </text>
+              <text style={{ fg: THEME_COLORS.text.secondary }} width={20}>
                 {finding.resourceId.length > 18 
                   ? finding.resourceId.slice(0, 16) + ".." 
                   : finding.resourceId}
               </text>
-              <text style={{ fg: "#484f58" }} marginLeft={1}>
+              <text style={{ fg: THEME_COLORS.text.muted }} marginLeft={1}>
                 ({finding.profile}
                 {finding.region ? `/${finding.region}` : ""})
               </text>
               <Show when={finding.estimatedWaste}>
-                <text style={{ fg: "#f85149" }} marginLeft={1}>
+                <text style={{ fg: FINDING_COLORS.error }} marginLeft={1}>
                   ~${finding.estimatedWaste?.toFixed(2)}/mo
                 </text>
               </Show>
@@ -248,7 +232,7 @@ function FindingSection(props: {
         </For>
         
         <Show when={props.findings.length > 10}>
-          <text style={{ fg: "#484f58" }} paddingLeft={2}>
+          <text style={{ fg: THEME_COLORS.text.muted }} paddingLeft={2}>
             |- ... and {props.findings.length - 10} more
           </text>
         </Show>
