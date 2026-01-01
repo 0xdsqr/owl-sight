@@ -272,7 +272,7 @@ export function App(props: { config: AppConfig }) {
             <Match when={activeProvider() === "aws" && awsData()}>
               <Switch>
                 <Match when={activeTab() === 0}>
-                  <OverviewTab data={awsData()!} />
+                  <OverviewTab data={awsData()!} onNavigate={setActiveTab} />
                 </Match>
                 <Match when={activeTab() === 1}>
                   <ServicesTab data={awsData()!} />
@@ -314,7 +314,7 @@ export function App(props: { config: AppConfig }) {
             <Match when={activeProvider() === "cloudflare" && cloudflareData()}>
               <Switch>
                 <Match when={activeTab() === 0}>
-                  <CloudflareOverview data={cloudflareData()!} />
+                  <CloudflareOverview data={cloudflareData()!} onNavigate={setActiveTab} />
                 </Match>
                 <Match when={activeTab() === 1}>
                   <CloudflareZones data={cloudflareData()!} />

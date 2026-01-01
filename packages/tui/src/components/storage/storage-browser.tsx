@@ -15,6 +15,7 @@ import {
   downloadObject,
   createFolder,
   deleteFolder,
+  createBucket,
   getFileName,
   getParentPrefix,
   formatBytes,
@@ -26,7 +27,7 @@ import type { S3Client } from "@aws-sdk/client-s3"
 
 // Types
 type ViewMode = "buckets" | "objects"
-type ModalType = "none" | "delete" | "upload" | "download" | "newfolder" | "help" | "error" | "filepicker"
+type ModalType = "none" | "delete" | "upload" | "download" | "newfolder" | "newbucket" | "help" | "error" | "filepicker"
 type SortMode = "name" | "size" | "date"
 
 interface StorageBrowserProps {
@@ -397,6 +398,27 @@ export function StorageBrowser(props: StorageBrowserProps) {
     setTimeout(() => setStatus(null), 3000)
   }
 
+  const doNewBucket = async () => {
+    const c = client()
+    const name = modalInput().trim()
+    if (!c || !name) return
+
+    setModal("none")
+    setStatus(`Creating bucket ${name}...`)
+
+    try {
+      await createBucket(c, name, props.region)
+      setStatus(`Created bucket ${name}`)
+      // Reload bucket list
+      const list = await listBuckets(c)
+      setBuckets(list)
+    } catch (e) {
+      setStatus(`Failed: ${e}`)
+    }
+    setModalInput("")
+    setTimeout(() => setStatus(null), 3000)
+  }
+
   const copyPath = () => {
     const b = currentBucket()
     if (!b) return
@@ -428,12 +450,13 @@ export function StorageBrowser(props: StorageBrowserProps) {
     }
 
     // Modal input
-    if (["upload", "download", "newfolder"].includes(modal())) {
+    if (["upload", "download", "newfolder", "newbucket"].includes(modal())) {
       if (key.name === "escape") { setModal("none"); setModalInput(""); return }
       if (key.name === "return") {
         if (modal() === "upload") doUpload()
         else if (modal() === "download") doDownload()
         else if (modal() === "newfolder") doNewFolder()
+        else if (modal() === "newbucket") doNewBucket()
         return
       }
       if (key.name === "backspace") { setModalInput(v => v.slice(0, -1)); return }
@@ -558,6 +581,7 @@ export function StorageBrowser(props: StorageBrowserProps) {
       setModal("download"); setModalInput("")
     }
     else if (key.raw === "n" && view() === "objects") { setModal("newfolder"); setModalInput("") }
+    else if (key.raw === "N" && view() === "buckets" && !needsCreds()) { setModal("newbucket"); setModalInput("") }
     else if (key.raw === "c") copyPath()
     else if (key.raw === "R") view() === "objects" ? loadObjects() : null
     else if (key.raw === "?") setModal("help")
@@ -695,15 +719,21 @@ export function StorageBrowser(props: StorageBrowserProps) {
         {/* Details panel */}
         <box border borderStyle="rounded" borderColor={colors.border} width={26} flexDirection="column" marginLeft={1}>
           <box padding={1} flexDirection="column" gap={0}>
-            <Show when={view() === "buckets" && currentBucket()}>
-              <text style={{ fg: accent() }}><b>{currentBucket()!.name}</b></text>
-              <text style={{ fg: colors.textMuted }} marginTop={1}>Created</text>
-              <text style={{ fg: colors.text }}>{relativeTime(currentBucket()!.creationDate)}</text>
-              <box marginTop={2} padding={1} backgroundColor={colors.bgAlt} border borderColor={colors.border}>
-                <text style={{ fg: needsCreds() ? colors.yellow : colors.green }}>
-                  {needsCreds() ? "S3 keys needed" : "Enter to browse"}
-                </text>
-              </box>
+            <Show when={view() === "buckets"}>
+              <Show when={currentBucket()}>
+                <text style={{ fg: accent() }}><b>{currentBucket()!.name}</b></text>
+                <text style={{ fg: colors.textMuted }} marginTop={1}>Created</text>
+                <text style={{ fg: colors.text }}>{relativeTime(currentBucket()!.creationDate)}</text>
+              </Show>
+              <text style={{ fg: colors.text }} marginTop={1}><b>Keys</b></text>
+              <text style={{ fg: colors.textMuted }}><span style={{ fg: colors.blue }}>j/k</span> navigate</text>
+              <text style={{ fg: colors.textMuted }}><span style={{ fg: colors.blue }}>Enter</span> browse</text>
+              <text style={{ fg: colors.textMuted }}><span style={{ fg: colors.green }}>N</span> new bucket</text>
+              <Show when={needsCreds()}>
+                <box marginTop={1} padding={1} backgroundColor={colors.bgAlt} border borderColor={colors.yellow}>
+                  <text style={{ fg: colors.yellow }}>S3 keys needed</text>
+                </box>
+              </Show>
             </Show>
 
             <Show when={view() === "objects"}>
@@ -786,6 +816,17 @@ export function StorageBrowser(props: StorageBrowserProps) {
         </box>
       </Show>
 
+      <Show when={modal() === "newbucket"}>
+        <box position="absolute" left="50%" top="50%" marginLeft={-22} marginTop={-3} width={44} height={6}
+             backgroundColor={colors.bgAlt} border borderStyle="rounded" borderColor={accent()} padding={1}>
+          <text style={{ fg: accent() }}><b>New bucket</b></text>
+          <box backgroundColor={colors.bgHover} paddingLeft={1} height={1} marginTop={1}>
+            <text style={{ fg: colors.text }}>{modalInput()}<span style={{ fg: colors.blue }}>_</span></text>
+          </box>
+          <text style={{ fg: colors.textDim }}>Enter bucket name, press Enter</text>
+        </box>
+      </Show>
+
       <Show when={modal() === "error"}>
         <box position="absolute" left="50%" top="50%" marginLeft={-26} marginTop={-6} width={52} height={12}
              backgroundColor={colors.bgAlt} border borderStyle="rounded" borderColor={colors.yellow} padding={1}>
@@ -813,6 +854,7 @@ export function StorageBrowser(props: StorageBrowserProps) {
           <text style={{ fg: colors.text }} marginTop={1}>Operations</text>
           <text style={{ fg: colors.textMuted }}>  Space         toggle select</text>
           <text style={{ fg: colors.textMuted }}>  u/o/n/d       upload/download/new/delete</text>
+          <text style={{ fg: colors.textMuted }}>  N             new bucket (in bucket list)</text>
           <text style={{ fg: colors.textMuted }}>  c             copy path</text>
           <text style={{ fg: colors.textMuted }}>  R             refresh</text>
           <text style={{ fg: colors.textDim }} marginTop={1}>Press Esc to close</text>
