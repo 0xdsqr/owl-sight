@@ -1,4 +1,5 @@
 import { Show } from "solid-js"
+import { PROVIDER_COLORS, THEME_COLORS, STATUS_COLORS } from "../../constants/colors"
 
 type Provider = "aws" | "cloudflare"
 
@@ -12,7 +13,7 @@ export function ProviderBar(props: ProviderBarProps) {
   return (
     <box
       height={2}
-      backgroundColor="#0d1117"
+      backgroundColor={THEME_COLORS.background.primary}
       flexDirection="row"
       paddingLeft={1}
       paddingRight={1}
@@ -23,16 +24,16 @@ export function ProviderBar(props: ProviderBarProps) {
         paddingLeft={2}
         paddingRight={2}
         height={2}
-        backgroundColor={props.active === "aws" ? "#21262d" : "transparent"}
-        borderColor={props.active === "aws" ? "#ff9900" : "transparent"}
+        backgroundColor={props.active === "aws" ? THEME_COLORS.background.tertiary : "transparent"}
+        borderColor={props.active === "aws" ? PROVIDER_COLORS.aws.primary : "transparent"}
         border={props.active === "aws" ? ["bottom"] : undefined}
         alignItems="center"
         justifyContent="center"
       >
-        <text style={{ fg: props.active === "aws" ? "#ff9900" : "#8b949e" }}>
-          <span style={{ fg: "#484f58" }}>[</span>
+        <text style={{ fg: props.active === "aws" ? PROVIDER_COLORS.aws.primary : THEME_COLORS.text.secondary }}>
+          <span style={{ fg: THEME_COLORS.text.muted }}>[</span>
           <span style={{ bold: props.active === "aws" }}>AWS</span>
-          <span style={{ fg: "#484f58" }}>]</span>
+          <span style={{ fg: THEME_COLORS.text.muted }}>]</span>
         </text>
       </box>
 
@@ -41,9 +42,9 @@ export function ProviderBar(props: ProviderBarProps) {
         paddingRight={2}
         height={2}
         backgroundColor={
-          props.active === "cloudflare" ? "#21262d" : "transparent"
+          props.active === "cloudflare" ? THEME_COLORS.background.tertiary : "transparent"
         }
-        borderColor={props.active === "cloudflare" ? "#f38020" : "transparent"}
+        borderColor={props.active === "cloudflare" ? PROVIDER_COLORS.cloudflare.primary : "transparent"}
         border={props.active === "cloudflare" ? ["bottom"] : undefined}
         alignItems="center"
         justifyContent="center"
@@ -52,25 +53,25 @@ export function ProviderBar(props: ProviderBarProps) {
           style={{
             fg: props.hasCloudflare
               ? props.active === "cloudflare"
-                ? "#f38020"
-                : "#8b949e"
-              : "#484f58",
+                ? PROVIDER_COLORS.cloudflare.primary
+                : THEME_COLORS.text.secondary
+              : THEME_COLORS.text.muted,
           }}
         >
-          <span style={{ fg: "#484f58" }}>[</span>
+          <span style={{ fg: THEME_COLORS.text.muted }}>[</span>
           <span style={{ bold: props.active === "cloudflare" }}>
             Cloudflare
           </span>
-          <span style={{ fg: "#484f58" }}>]</span>
+          <span style={{ fg: THEME_COLORS.text.muted }}>]</span>
           <Show when={!props.hasCloudflare}>
-            <span style={{ fg: "#f85149" }}> (no token)</span>
+            <span style={{ fg: STATUS_COLORS.error }}> (no token)</span>
           </Show>
         </text>
       </box>
 
       <box flexGrow={1} />
 
-      <text style={{ fg: "#484f58" }}>[ / ] switch provider</text>
+      <text style={{ fg: THEME_COLORS.text.muted }}>[ / ] switch provider</text>
     </box>
   )
 }

@@ -1,4 +1,5 @@
 import { Show } from "solid-js"
+import { THEME_COLORS } from "../../constants/colors"
 
 type Provider = "aws" | "cloudflare"
 
@@ -11,27 +12,27 @@ export function Footer(props: FooterProps) {
   return (
     <box
       height={1}
-      backgroundColor="#161b22"
+      backgroundColor={THEME_COLORS.background.secondary}
       paddingLeft={1}
       paddingRight={1}
-      borderColor="#30363d"
+      borderColor={THEME_COLORS.border.default}
       border={["top"]}
       flexDirection="row"
       alignItems="center"
     >
-      <text style={{ fg: "#484f58" }}>
-        <span style={{ fg: "#8b949e" }}>1-5</span> tabs
-        <span style={{ fg: "#484f58" }}>|</span>
-        <span style={{ fg: "#8b949e" }}>Tab</span> next
-        <span style={{ fg: "#484f58" }}>|</span>
-        <span style={{ fg: "#8b949e" }}>r</span> refresh
-        <span style={{ fg: "#484f58" }}>|</span>
-        <span style={{ fg: "#8b949e" }}>`</span> console
-        <span style={{ fg: "#484f58" }}>|</span>
-        <span style={{ fg: "#8b949e" }}>q</span> quit
+      <text style={{ fg: THEME_COLORS.text.muted }}>
+        <span style={{ fg: THEME_COLORS.text.secondary }}>1-5</span> tabs
+        <span style={{ fg: THEME_COLORS.text.muted }}>|</span>
+        <span style={{ fg: THEME_COLORS.text.secondary }}>Tab</span> next
+        <span style={{ fg: THEME_COLORS.text.muted }}>|</span>
+        <span style={{ fg: THEME_COLORS.text.secondary }}>r</span> refresh
+        <span style={{ fg: THEME_COLORS.text.muted }}>|</span>
+        <span style={{ fg: THEME_COLORS.text.secondary }}>`</span> console
+        <span style={{ fg: THEME_COLORS.text.muted }}>|</span>
+        <span style={{ fg: THEME_COLORS.text.secondary }}>q</span> quit
         <Show when={props.hasCloudflare}>
-          <span style={{ fg: "#484f58" }}> | </span>
-          <span style={{ fg: "#8b949e" }}>[ ]</span> switch provider
+          <span style={{ fg: THEME_COLORS.text.muted }}> | </span>
+          <span style={{ fg: THEME_COLORS.text.secondary }}>[ ]</span> switch provider
         </Show>
       </text>
     </box>
