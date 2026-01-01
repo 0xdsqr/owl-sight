@@ -71,7 +71,23 @@ export interface TrendDataPoint {
 }
 
 export interface AuditFinding {
-  type: "stopped_instance" | "unattached_volume" | "unused_eip" | "untagged" | "budget_alert"
+  type: 
+    | "stopped_instance" 
+    | "idle_instance"
+    | "unattached_volume" 
+    | "unused_eip" 
+    | "untagged" 
+    | "budget_alert"
+    | "idle_eks_cluster"
+    | "over_provisioned_eks"
+    | "unused_eks_nodegroup"
+    | "idle_transfer_server"
+    | "unused_transfer_server"
+    | "empty_sqs_queue"
+    | "unused_sqs_queue"
+    | "dead_letter_queue"
+    | "unused_sns_topic"
+    | "unsubscribed_sns_topic"
   profile: string
   region?: string
   resourceId: string
@@ -141,7 +157,7 @@ function formatDate(date: Date): string {
   return date.toISOString().split("T")[0]!
 }
 
-async function getCostSummary(
+export async function getCostSummary(
   ce: CostExplorerClient,
   profile: string,
   accountId: string,
@@ -217,7 +233,7 @@ async function getCostSummary(
   }
 }
 
-async function getTrendData(
+export async function getTrendData(
   ce: CostExplorerClient,
   months: number = 6
 ): Promise<TrendDataPoint[]> {
@@ -250,7 +266,7 @@ async function getTrendData(
 // Budgets
 // ============================================================================
 
-async function getBudgets(
+export async function getBudgets(
   client: BudgetsClient,
   accountId: string
 ): Promise<BudgetInfo[]> {
@@ -291,7 +307,7 @@ async function getBudgets(
 // EC2 Summary
 // ============================================================================
 
-async function getEC2Summary(
+export async function getEC2Summary(
   ec2: EC2Client,
   profile: string,
   region: string
@@ -321,7 +337,7 @@ async function getEC2Summary(
 // Audit Findings
 // ============================================================================
 
-async function getAuditFindings(
+export async function getAuditFindings(
   ec2: EC2Client,
   budgets: BudgetInfo[],
   profile: string,
