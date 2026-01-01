@@ -1,0 +1,47 @@
+name: Tests and Coverage
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run tests with coverage
+        working-directory: packages/tui
+        run: bun test --coverage
+
+      - name: Display coverage summary
+        working-directory: packages/tui
+        if: always()
+        run: |
+          if [ -f coverage/lcov.info ]; then
+            echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
+            echo "Coverage report generated successfully" >> $GITHUB_STEP_SUMMARY
+            echo "Check the artifacts for detailed coverage information." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: packages/tui/coverage/
+          retention-days: 7
+
