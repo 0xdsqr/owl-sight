@@ -1,5 +1,6 @@
 import { For, Show } from "solid-js"
 import type { DashboardData } from "../providers/aws/client"
+import { THEME_COLORS, PROVIDER_COLORS, STATUS_COLORS, FINDING_COLORS, SEMANTIC_COLORS, BRAND_COLORS } from "../../constants/colors"
 
 // Service icons (ASCII art style)
 const SERVICE_ICONS: Record<string, string> = {
@@ -51,7 +52,7 @@ function TopStatsBar(props: { data: DashboardData }) {
   }
   
   const change = () => props.data.totals.change
-  const changeColor = () => change() > 5 ? "#f85149" : change() < -5 ? "#7ee787" : "#8b949e"
+  const changeColor = () => change() > 5 ? FINDING_COLORS.error : change() < -5 ? STATUS_COLORS.success : THEME_COLORS.text.secondary
   const changeArrow = () => change() > 0 ? "+" : ""
   
   return (
@@ -59,8 +60,8 @@ function TopStatsBar(props: { data: DashboardData }) {
       flexDirection="row" 
       gap={2} 
       height={3}
-      backgroundColor="#161b22"
-      borderColor="#30363d"
+      backgroundColor={THEME_COLORS.background.secondary}
+      borderColor={THEME_COLORS.border.default}
       border
       borderStyle="rounded"
       paddingLeft={2}
@@ -69,46 +70,46 @@ function TopStatsBar(props: { data: DashboardData }) {
     >
       {/* Current Period Cost */}
       <box flexDirection="column" flexGrow={1}>
-        <text style={{ fg: "#8b949e" }}>Current Period</text>
-        <text style={{ fg: "#ff9900" }}>
+        <text style={{ fg: THEME_COLORS.text.secondary }}>Current Period</text>
+        <text style={{ fg: PROVIDER_COLORS.aws.primary }}>
           <b>{formatCurrency(props.data.totals.currentPeriod)}</b>
         </text>
       </box>
       
-      <text style={{ fg: "#30363d" }}>|</text>
+      <text style={{ fg: THEME_COLORS.border.default }}>|</text>
       
       {/* Change */}
       <box flexDirection="column" flexGrow={1}>
-        <text style={{ fg: "#8b949e" }}>vs Last Period</text>
+        <text style={{ fg: THEME_COLORS.text.secondary }}>vs Last Period</text>
         <text style={{ fg: changeColor() }}>
           {changeArrow()}{change().toFixed(1)}%
         </text>
       </box>
       
-      <text style={{ fg: "#30363d" }}>|</text>
+      <text style={{ fg: THEME_COLORS.border.default }}>|</text>
       
       {/* Profiles */}
       <box flexDirection="column" flexGrow={1}>
-        <text style={{ fg: "#8b949e" }}>Profiles</text>
-        <text style={{ fg: "#58a6ff" }}>{props.data.costs.length}</text>
+        <text style={{ fg: THEME_COLORS.text.secondary }}>Profiles</text>
+        <text style={{ fg: STATUS_COLORS.info }}>{props.data.costs.length}</text>
       </box>
       
-      <text style={{ fg: "#30363d" }}>|</text>
+      <text style={{ fg: THEME_COLORS.border.default }}>|</text>
       
       {/* EC2 Running */}
       <box flexDirection="column" flexGrow={1}>
-        <text style={{ fg: "#8b949e" }}>EC2 Running</text>
-        <text style={{ fg: "#7ee787" }}>
+        <text style={{ fg: THEME_COLORS.text.secondary }}>EC2 Running</text>
+        <text style={{ fg: STATUS_COLORS.success }}>
           {props.data.ec2.reduce((sum, e) => sum + e.running, 0)}
         </text>
       </box>
       
-      <text style={{ fg: "#30363d" }}>|</text>
+      <text style={{ fg: THEME_COLORS.border.default }}>|</text>
       
       {/* Audit Issues */}
       <box flexDirection="column" flexGrow={1}>
-        <text style={{ fg: "#8b949e" }}>Audit Issues</text>
-        <text style={{ fg: props.data.audit.length > 0 ? "#f0883e" : "#7ee787" }}>
+        <text style={{ fg: THEME_COLORS.text.secondary }}>Audit Issues</text>
+        <text style={{ fg: props.data.audit.length > 0 ? SEMANTIC_COLORS.warning : STATUS_COLORS.success }}>
           {props.data.audit.length}
         </text>
       </box>
@@ -128,7 +129,7 @@ function CostSummaryTable(props: { data: DashboardData }) {
   
   const formatChange = (change: number) => {
     const arrow = change > 0 ? "^" : change < 0 ? "v" : "-"
-    const color = change > 5 ? "#f85149" : change < -5 ? "#7ee787" : "#8b949e"
+    const color = change > 5 ? FINDING_COLORS.error : change < -5 ? STATUS_COLORS.success : THEME_COLORS.text.secondary
     return { text: `${arrow}${Math.abs(change).toFixed(1)}%`, color }
   }
 
@@ -136,7 +137,7 @@ function CostSummaryTable(props: { data: DashboardData }) {
     <box 
       border 
       borderStyle="rounded" 
-      borderColor="#30363d"
+      borderColor={THEME_COLORS.border.default}
       flexDirection="column"
       title=" Cost by Profile "
       titleAlignment="left"
@@ -144,23 +145,23 @@ function CostSummaryTable(props: { data: DashboardData }) {
       {/* Header */}
       <box 
         flexDirection="row" 
-        backgroundColor="#21262d"
+        backgroundColor={THEME_COLORS.background.tertiary}
         paddingLeft={1}
         paddingRight={1}
         height={1}
       >
-        <text width={16} style={{ fg: "#8b949e" }}><b>Profile</b></text>
-        <text width={12} style={{ fg: "#8b949e" }}><b>Account</b></text>
-        <text width={12} style={{ fg: "#8b949e" }}><b>Last</b></text>
-        <text width={12} style={{ fg: "#8b949e" }}><b>Current</b></text>
-        <text width={10} style={{ fg: "#8b949e" }}><b>Change</b></text>
+        <text width={16} style={{ fg: THEME_COLORS.text.secondary }}><b>Profile</b></text>
+        <text width={12} style={{ fg: THEME_COLORS.text.secondary }}><b>Account</b></text>
+        <text width={12} style={{ fg: THEME_COLORS.text.secondary }}><b>Last</b></text>
+        <text width={12} style={{ fg: THEME_COLORS.text.secondary }}><b>Current</b></text>
+        <text width={10} style={{ fg: THEME_COLORS.text.secondary }}><b>Change</b></text>
       </box>
       
       {/* Data rows */}
       <For each={props.data.costs}>
         {(cost, idx) => {
           const change = formatChange(cost.change)
-          const bgColor = idx() % 2 === 0 ? "#0d1117" : "#161b22"
+          const bgColor = idx() % 2 === 0 ? THEME_COLORS.background.primary : THEME_COLORS.background.secondary
           return (
             <box 
               flexDirection="row" 
@@ -169,10 +170,10 @@ function CostSummaryTable(props: { data: DashboardData }) {
               height={1}
               backgroundColor={bgColor}
             >
-              <text width={16} style={{ fg: "#c9d1d9" }}>{cost.profile}</text>
-              <text width={12} style={{ fg: "#484f58" }}>{cost.accountId.slice(-8)}</text>
-              <text width={12} style={{ fg: "#8b949e" }}>{formatCurrency(cost.lastPeriod)}</text>
-              <text width={12} style={{ fg: "#c9d1d9" }}>{formatCurrency(cost.currentPeriod)}</text>
+              <text width={16} style={{ fg: THEME_COLORS.text.primary }}>{cost.profile}</text>
+              <text width={12} style={{ fg: THEME_COLORS.text.muted }}>{cost.accountId.slice(-8)}</text>
+              <text width={12} style={{ fg: THEME_COLORS.text.secondary }}>{formatCurrency(cost.lastPeriod)}</text>
+              <text width={12} style={{ fg: THEME_COLORS.text.primary }}>{formatCurrency(cost.currentPeriod)}</text>
               <text width={10} style={{ fg: change.color }}>{change.text}</text>
             </box>
           )
@@ -182,17 +183,17 @@ function CostSummaryTable(props: { data: DashboardData }) {
       {/* Total row */}
       <box 
         flexDirection="row" 
-        backgroundColor="#21262d"
+        backgroundColor={THEME_COLORS.background.tertiary}
         paddingLeft={1}
         paddingRight={1}
         height={1}
-        borderColor="#30363d"
+        borderColor={THEME_COLORS.border.default}
         border={["top"]}
       >
-        <text width={16} style={{ fg: "#ff9900" }}><b>TOTAL</b></text>
-        <text width={12} style={{ fg: "#484f58" }}>--</text>
-        <text width={12} style={{ fg: "#ff9900" }}>{formatCurrency(props.data.totals.lastPeriod)}</text>
-        <text width={12} style={{ fg: "#ff9900" }}><b>{formatCurrency(props.data.totals.currentPeriod)}</b></text>
+        <text width={16} style={{ fg: PROVIDER_COLORS.aws.primary }}><b>TOTAL</b></text>
+        <text width={12} style={{ fg: THEME_COLORS.text.muted }}>--</text>
+        <text width={12} style={{ fg: PROVIDER_COLORS.aws.primary }}>{formatCurrency(props.data.totals.lastPeriod)}</text>
+        <text width={12} style={{ fg: PROVIDER_COLORS.aws.primary }}><b>{formatCurrency(props.data.totals.currentPeriod)}</b></text>
         {(() => {
           const change = formatChange(props.data.totals.change)
           return <text width={10} style={{ fg: change.color }}><b>{change.text}</b></text>
@@ -231,15 +232,15 @@ function TopServicesPanel(props: { data: DashboardData }) {
   const getIcon = (service: string) => SERVICE_ICONS[service] ?? SERVICE_ICONS["default"]
   
   const getBarColor = (idx: number) => {
-    const colors = ["#ff9900", "#f0883e", "#d29922", "#a371f7", "#58a6ff"]
-    return colors[idx] ?? "#8b949e"
+    const colors = [PROVIDER_COLORS.aws.primary, SEMANTIC_COLORS.warning, FINDING_COLORS.warning, BRAND_COLORS.owlPurple, STATUS_COLORS.info]
+    return colors[idx] ?? THEME_COLORS.text.secondary
   }
 
   return (
     <box 
       border 
       borderStyle="rounded" 
-      borderColor="#30363d"
+      borderColor={THEME_COLORS.border.default}
       flexDirection="column"
       flexGrow={1}
       title=" Top Services "
@@ -257,13 +258,13 @@ function TopServicesPanel(props: { data: DashboardData }) {
               alignItems="center"
             >
               <text width={6} style={{ fg: getBarColor(idx()) }}>{getIcon(svc.service)}</text>
-              <text width={20} style={{ fg: "#c9d1d9" }}>
+              <text width={20} style={{ fg: THEME_COLORS.text.primary }}>
                 {svc.service.length > 18 ? svc.service.slice(0, 16) + ".." : svc.service}
               </text>
-              <text width={10} style={{ fg: "#8b949e" }}>{formatCurrency(svc.cost)}</text>
+              <text width={10} style={{ fg: THEME_COLORS.text.secondary }}>{formatCurrency(svc.cost)}</text>
               <text>
                 <span style={{ fg: getBarColor(idx()) }}>{"█".repeat(barWidth)}</span>
-                <span style={{ fg: "#21262d" }}>{"░".repeat(25 - barWidth)}</span>
+                <span style={{ fg: THEME_COLORS.background.tertiary }}>{"░".repeat(25 - barWidth)}</span>
               </text>
             </box>
           )
@@ -282,9 +283,9 @@ function BudgetsPanel(props: { budgets: DashboardData["budgets"] }) {
   
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "exceeded": return "#f85149"
-      case "warning": return "#d29922"
-      default: return "#7ee787"
+      case "exceeded": return FINDING_COLORS.error
+      case "warning": return FINDING_COLORS.warning
+      default: return STATUS_COLORS.success
     }
   }
   
@@ -300,7 +301,7 @@ function BudgetsPanel(props: { budgets: DashboardData["budgets"] }) {
     <box 
       border 
       borderStyle="rounded" 
-      borderColor="#30363d"
+      borderColor={THEME_COLORS.border.default}
       flexDirection="column"
       flexGrow={1}
       title=" Budgets "
@@ -310,8 +311,8 @@ function BudgetsPanel(props: { budgets: DashboardData["budgets"] }) {
         when={props.budgets.length > 0}
         fallback={
           <box padding={1} flexGrow={1} alignItems="center" justifyContent="center">
-            <text style={{ fg: "#484f58" }}>No budgets configured</text>
-            <text style={{ fg: "#30363d" }} marginTop={1}>Set up budgets in AWS Console</text>
+            <text style={{ fg: THEME_COLORS.text.muted }}>No budgets configured</text>
+            <text style={{ fg: THEME_COLORS.border.default }} marginTop={1}>Set up budgets in AWS Console</text>
           </box>
         }
       >
@@ -331,7 +332,7 @@ function BudgetsPanel(props: { budgets: DashboardData["budgets"] }) {
               >
                 <box flexDirection="row">
                   <text style={{ fg: color }}>{getStatusIcon(budget.status)} </text>
-                  <text style={{ fg: "#c9d1d9" }} flexGrow={1}>{budget.name}</text>
+                  <text style={{ fg: THEME_COLORS.text.primary }} flexGrow={1}>{budget.name}</text>
                   <text style={{ fg: color }}>
                     {budget.percentUsed.toFixed(0)}%
                   </text>
@@ -339,9 +340,9 @@ function BudgetsPanel(props: { budgets: DashboardData["budgets"] }) {
                 <box flexDirection="row" gap={1} paddingLeft={4}>
                   <text>
                     <span style={{ fg: color }}>{"█".repeat(filled)}</span>
-                    <span style={{ fg: "#21262d" }}>{"░".repeat(empty)}</span>
+                    <span style={{ fg: THEME_COLORS.background.tertiary }}>{"░".repeat(empty)}</span>
                   </text>
-                  <text style={{ fg: "#484f58" }}>
+                  <text style={{ fg: THEME_COLORS.text.muted }}>
                     {formatCurrency(budget.actual)}/{formatCurrency(budget.limit)}
                   </text>
                 </box>
@@ -392,7 +393,7 @@ function EC2Panel(props: { ec2: DashboardData["ec2"] }) {
     <box 
       border 
       borderStyle="rounded" 
-      borderColor="#30363d"
+      borderColor={THEME_COLORS.border.default}
       flexDirection="column"
       flexGrow={1}
       title=" EC2 Instances "
@@ -401,15 +402,15 @@ function EC2Panel(props: { ec2: DashboardData["ec2"] }) {
       {/* Header */}
       <box 
         flexDirection="row" 
-        backgroundColor="#21262d"
+        backgroundColor={THEME_COLORS.background.tertiary}
         paddingLeft={1}
         paddingRight={1}
         height={1}
       >
-        <text width={12} style={{ fg: "#8b949e" }}><b>Profile</b></text>
-        <text width={8} style={{ fg: "#8b949e" }}><b>Run</b></text>
-        <text width={8} style={{ fg: "#8b949e" }}><b>Stop</b></text>
-        <text width={6} style={{ fg: "#8b949e" }}><b>Tot</b></text>
+        <text width={12} style={{ fg: THEME_COLORS.text.secondary }}><b>Profile</b></text>
+        <text width={8} style={{ fg: THEME_COLORS.text.secondary }}><b>Run</b></text>
+        <text width={8} style={{ fg: THEME_COLORS.text.secondary }}><b>Stop</b></text>
+        <text width={6} style={{ fg: THEME_COLORS.text.secondary }}><b>Tot</b></text>
       </box>
       
       <For each={aggregated()}>
@@ -419,14 +420,14 @@ function EC2Panel(props: { ec2: DashboardData["ec2"] }) {
             paddingLeft={1}
             paddingRight={1}
             height={1}
-            backgroundColor={idx() % 2 === 0 ? "#0d1117" : "#161b22"}
+            backgroundColor={idx() % 2 === 0 ? THEME_COLORS.background.primary : THEME_COLORS.background.secondary}
           >
-            <text width={12} style={{ fg: "#c9d1d9" }}>{row.profile}</text>
-            <text width={8} style={{ fg: "#7ee787" }}>{row.running}</text>
-            <text width={8} style={{ fg: row.stopped > 0 ? "#d29922" : "#484f58" }}>
+            <text width={12} style={{ fg: THEME_COLORS.text.primary }}>{row.profile}</text>
+            <text width={8} style={{ fg: STATUS_COLORS.success }}>{row.running}</text>
+            <text width={8} style={{ fg: row.stopped > 0 ? FINDING_COLORS.warning : THEME_COLORS.text.muted }}>
               {row.stopped}
             </text>
-            <text width={6} style={{ fg: "#8b949e" }}>{row.total}</text>
+            <text width={6} style={{ fg: THEME_COLORS.text.secondary }}>{row.total}</text>
           </box>
         )}
       </For>
@@ -434,19 +435,19 @@ function EC2Panel(props: { ec2: DashboardData["ec2"] }) {
       {/* Total row */}
       <box 
         flexDirection="row" 
-        backgroundColor="#21262d"
+        backgroundColor={THEME_COLORS.background.tertiary}
         paddingLeft={1}
         paddingRight={1}
         height={1}
-        borderColor="#30363d"
+        borderColor={THEME_COLORS.border.default}
         border={["top"]}
       >
-        <text width={12} style={{ fg: "#ff9900" }}><b>TOTAL</b></text>
-        <text width={8} style={{ fg: "#7ee787" }}><b>{totals().running}</b></text>
-        <text width={8} style={{ fg: totals().stopped > 0 ? "#d29922" : "#484f58" }}>
+        <text width={12} style={{ fg: PROVIDER_COLORS.aws.primary }}><b>TOTAL</b></text>
+        <text width={8} style={{ fg: STATUS_COLORS.success }}><b>{totals().running}</b></text>
+        <text width={8} style={{ fg: totals().stopped > 0 ? FINDING_COLORS.warning : THEME_COLORS.text.muted }}>
           <b>{totals().stopped}</b>
         </text>
-        <text width={6} style={{ fg: "#ff9900" }}><b>{totals().total}</b></text>
+        <text width={6} style={{ fg: PROVIDER_COLORS.aws.primary }}><b>{totals().total}</b></text>
       </box>
     </box>
   )
