@@ -1,5 +1,5 @@
 import { createMemo, For } from "solid-js"
-import type { DashboardData, TrendDataPoint } from "../providers/aws/client"
+import type { DashboardData, TrendDataPoint } from "../../providers/aws/client"
 import { THEME_COLORS, PROVIDER_COLORS, STATUS_COLORS, FINDING_COLORS, SEMANTIC_COLORS } from "../../constants/colors"
 
 export function TrendTab(props: { data: DashboardData }) {

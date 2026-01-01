@@ -138,7 +138,8 @@ export async function getBillingSummary(
     
     const subs = (subscriptions as any)?.result ?? []
     
-    for (const sub of Array.isArray(subs) ? subs : []) {
+    const subArray = Array.isArray(subs) ? subs : []
+    subArray.forEach(sub => {
       const cost = sub.price ?? 0
       currentPeriod += cost
       if (sub.component_name || sub.name) {
@@ -148,7 +149,7 @@ export async function getBillingSummary(
           percentage: 0,
         })
       }
-    }
+    })
     
     if (subs[0]?.name) {
       planName = subs[0].name
@@ -159,9 +160,9 @@ export async function getBillingSummary(
   
   // Calculate percentages
   const total = byService.reduce((sum, svc) => sum + svc.cost, 0)
-  for (const svc of byService) {
+  byService.forEach(svc => {
     svc.percentage = total > 0 ? (svc.cost / total) * 100 : 0
-  }
+  })
   byService.sort((a, b) => b.cost - a.cost)
   
   const change = lastPeriod > 0 ? ((currentPeriod - lastPeriod) / lastPeriod) * 100 : 0
@@ -186,33 +187,26 @@ export async function getZoneAnalytics(
   accountId: string,
   days: number = 30
 ): Promise<ZoneSummary[]> {
-  const summaries: ZoneSummary[] = []
-  
   try {
     const zones = await client.zones.list({ account: { id: accountId } })
     const zoneList = (zones as any).result ?? zones
     
-    if (!Array.isArray(zoneList)) return summaries
+    if (!Array.isArray(zoneList)) return []
     
-    for (const zone of zoneList) {
-      // Zone analytics requires separate API call that may not be available
-      summaries.push({
-        accountId,
-        zoneId: zone.id ?? '',
-        zoneName: zone.name ?? '',
-        status: (zone.status as 'active' | 'paused' | 'pending') ?? 'pending',
-        plan: zone.plan?.name ?? 'Free',
-        requests30d: 0, // Would need analytics API
-        bandwidth30d: 0,
-        cacheHitRate: 0,
-        threats30d: 0,
-      })
-    }
+    return zoneList.map(zone => ({
+      accountId,
+      zoneId: zone.id ?? '',
+      zoneName: zone.name ?? '',
+      status: (zone.status as 'active' | 'paused' | 'pending') ?? 'pending',
+      plan: zone.plan?.name ?? 'Free',
+      requests30d: 0, // Would need analytics API
+      bandwidth30d: 0,
+      cacheHitRate: 0,
+      threats30d: 0,
+    }))
   } catch {
-    // Zone API not available
+    return []
   }
-  
-  return summaries
 }
 
 // ============================================================================
@@ -223,32 +217,24 @@ export async function getWorkersAnalytics(
   client: Cloudflare,
   accountId: string
 ): Promise<WorkerSummary[]> {
-  const summaries: WorkerSummary[] = []
-  
   try {
     const workers = await client.workers.scripts.list({ account_id: accountId })
     const workerList = (workers as any).result ?? workers
     
-    if (!Array.isArray(workerList)) return summaries
+    if (!Array.isArray(workerList)) return []
     
-    for (const worker of workerList) {
-      const scriptName = worker.id ?? worker.name ?? 'unknown'
-      
-      summaries.push({
-        accountId,
-        scriptName,
-        requests30d: 0, // Would need analytics API
-        cpuTime30d: 0,
-        errors30d: 0,
-        lastDeployed: new Date(worker.modified_on ?? Date.now()),
-        estimatedCost: 0,
-      })
-    }
+    return workerList.map(worker => ({
+      accountId,
+      scriptName: worker.id ?? worker.name ?? 'unknown',
+      requests30d: 0, // Would need analytics API
+      cpuTime30d: 0,
+      errors30d: 0,
+      lastDeployed: new Date(worker.modified_on ?? Date.now()),
+      estimatedCost: 0,
+    }))
   } catch {
-    // Workers API not available
+    return []
   }
-  
-  return summaries
 }
 
 // ============================================================================
@@ -259,36 +245,30 @@ export async function getR2Buckets(
   client: Cloudflare,
   accountId: string
 ): Promise<R2BucketSummary[]> {
-  const summaries: R2BucketSummary[] = []
-  
   try {
     const response = await client.r2.buckets.list({ account_id: accountId })
     // R2 API returns buckets directly or in a result wrapper
     const buckets = (response as any).buckets ?? (response as any).result?.buckets ?? []
     
-    if (!Array.isArray(buckets)) return summaries
+    if (!Array.isArray(buckets)) return []
     
-    for (const bucket of buckets) {
+    return buckets.map(bucket => {
       const storageBytes = bucket.size ?? 0
       const storageGB = storageBytes / (1024 ** 3)
-      const storageCost = storageGB * 0.015 // R2 pricing: $0.015/GB/month
-      
-      summaries.push({
+      return {
         accountId,
         bucketName: bucket.name ?? 'unknown',
         storageBytes,
         objectCount: bucket.object_count ?? 0,
         operationsA30d: 0,
         operationsB30d: 0,
-        estimatedCost: storageCost,
+        estimatedCost: storageGB * 0.015, // R2 pricing: $0.015/GB/month
         lastAccessed: undefined,
-      })
-    }
+      }
+    })
   } catch {
-    // R2 API not available
+    return []
   }
-  
-  return summaries
 }
 
 // ============================================================================
@@ -300,68 +280,58 @@ export async function runAudit(
   workers: WorkerSummary[],
   r2Buckets: R2BucketSummary[]
 ): Promise<AuditFinding[]> {
-  const findings: AuditFinding[] = []
-  
   // Check for idle workers (no requests in 30 days)
-  for (const worker of workers) {
-    if (worker.requests30d === 0) {
-      findings.push({
-        type: 'idle_worker',
-        accountId: worker.accountId,
-        resourceId: worker.scriptName,
-        resourceName: worker.scriptName,
-        description: `Worker "${worker.scriptName}" has 0 requests in 30 days`,
-        estimatedWaste: 5,
-        suggestion: 'Consider deleting this worker if no longer needed',
-      })
-    }
-  }
+  const idleWorkerFindings = workers
+    .filter(worker => worker.requests30d === 0)
+    .map(worker => ({
+      type: 'idle_worker' as const,
+      accountId: worker.accountId,
+      resourceId: worker.scriptName,
+      resourceName: worker.scriptName,
+      description: `Worker "${worker.scriptName}" has 0 requests in 30 days`,
+      estimatedWaste: 5,
+      suggestion: 'Consider deleting this worker if no longer needed',
+    }))
   
   // Check for paused zones with paid features
-  for (const zone of zones) {
-    if (zone.status === 'paused' && zone.plan !== 'Free') {
-      findings.push({
-        type: 'unused_zone',
-        accountId: zone.accountId,
-        resourceId: zone.zoneId,
-        resourceName: zone.zoneName,
-        description: `Zone "${zone.zoneName}" is paused but on ${zone.plan} plan`,
-        estimatedWaste: 20,
-        suggestion: 'Downgrade to Free or delete if no longer needed',
-      })
-    }
-  }
+  const unusedZoneFindings = zones
+    .filter(zone => zone.status === 'paused' && zone.plan !== 'Free')
+    .map(zone => ({
+      type: 'unused_zone' as const,
+      accountId: zone.accountId,
+      resourceId: zone.zoneId,
+      resourceName: zone.zoneName,
+      description: `Zone "${zone.zoneName}" is paused but on ${zone.plan} plan`,
+      estimatedWaste: 20,
+      suggestion: 'Downgrade to Free or delete if no longer needed',
+    }))
   
   // Check for low cache hit rates
-  for (const zone of zones) {
-    if (zone.status === 'active' && zone.requests30d > 10000 && zone.cacheHitRate < 50) {
-      findings.push({
-        type: 'low_cache_hit',
-        accountId: zone.accountId,
-        resourceId: zone.zoneId,
-        resourceName: zone.zoneName,
-        description: `Zone "${zone.zoneName}" has low cache hit rate (${zone.cacheHitRate.toFixed(1)}%)`,
-        suggestion: 'Add Page Rules or Cache Rules to improve caching',
-      })
-    }
-  }
+  const lowCacheFindings = zones
+    .filter(zone => zone.status === 'active' && zone.requests30d > 10000 && zone.cacheHitRate < 50)
+    .map(zone => ({
+      type: 'low_cache_hit' as const,
+      accountId: zone.accountId,
+      resourceId: zone.zoneId,
+      resourceName: zone.zoneName,
+      description: `Zone "${zone.zoneName}" has low cache hit rate (${zone.cacheHitRate.toFixed(1)}%)`,
+      suggestion: 'Add Page Rules or Cache Rules to improve caching',
+    }))
   
   // Check for potentially stale R2 buckets
-  for (const bucket of r2Buckets) {
-    if (bucket.storageBytes > 1024 ** 3 && bucket.operationsB30d === 0) {
-      findings.push({
-        type: 'stale_r2_bucket',
-        accountId: bucket.accountId,
-        resourceId: bucket.bucketName,
-        resourceName: bucket.bucketName,
-        description: `R2 bucket "${bucket.bucketName}" has ${(bucket.storageBytes / 1024 ** 3).toFixed(1)}GB but no reads in 30 days`,
-        estimatedWaste: bucket.estimatedCost,
-        suggestion: 'Review if this data is still needed or can be archived',
-      })
-    }
-  }
+  const staleR2Findings = r2Buckets
+    .filter(bucket => bucket.storageBytes > 1024 ** 3 && bucket.operationsB30d === 0)
+    .map(bucket => ({
+      type: 'stale_r2_bucket' as const,
+      accountId: bucket.accountId,
+      resourceId: bucket.bucketName,
+      resourceName: bucket.bucketName,
+      description: `R2 bucket "${bucket.bucketName}" has ${(bucket.storageBytes / 1024 ** 3).toFixed(1)}GB but no reads in 30 days`,
+      estimatedWaste: bucket.estimatedCost,
+      suggestion: 'Review if this data is still needed or can be archived',
+    }))
   
-  return findings
+  return [...idleWorkerFindings, ...unusedZoneFindings, ...lowCacheFindings, ...staleR2Findings]
 }
 
 // ============================================================================
@@ -460,9 +430,9 @@ export async function loadAllData(
 
     // Recalculate percentages now that we have all services
     const total = cost.byService.reduce((sum, svc) => sum + svc.cost, 0)
-    for (const svc of cost.byService) {
+    cost.byService.forEach(svc => {
       svc.percentage = total > 0 ? (svc.cost / total) * 100 : 0
-    }
+    })
 
     // Re-sort by cost descending
     cost.byService.sort((a, b) => b.cost - a.cost)

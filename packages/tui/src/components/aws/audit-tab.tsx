@@ -1,5 +1,5 @@
 import { createMemo, For, Show } from "solid-js"
-import type { DashboardData, AuditFinding } from "../providers/aws/client"
+import type { DashboardData, AuditFinding } from "../../providers/aws/client"
 import { FINDING_COLORS, THEME_COLORS, STATUS_COLORS } from "../../constants/colors"
 
 // Define finding type metadata with type safety

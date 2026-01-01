@@ -1,7 +1,6 @@
 import { createSignal, createMemo, For, Show } from "solid-js"
 import { useKeyboard } from "@opentui/solid"
-import type { DashboardData, ZoneSummary } from "../providers/cloudflare/client"
-import { THEME_COLORS, PROVIDER_COLORS, STATUS_COLORS, FINDING_COLORS } from "../../constants/colors"
+import type { DashboardData, ZoneSummary } from "../../providers/cloudflare/client"
 
 export function CloudflareZones(props: { data: DashboardData }) {
   const [selectedIndex, setSelectedIndex] = createSignal(0)
@@ -44,9 +43,9 @@ export function CloudflareZones(props: { data: DashboardData }) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active": return STATUS_COLORS.success
-      case "paused": return FINDING_COLORS.warning
-      default: return THEME_COLORS.text.muted
+      case "active": return "#7ee787"
+      case "paused": return "#d29922"
+      default: return "#484f58"
     }
   }
 
@@ -64,15 +63,15 @@ export function CloudflareZones(props: { data: DashboardData }) {
       <box
         flexDirection="row"
         height={2}
-        backgroundColor={THEME_COLORS.background.secondary}
-        borderColor={THEME_COLORS.border.default}
+        backgroundColor="#161b22"
+        borderColor="#30363d"
         border={["bottom"]}
         paddingLeft={1}
         paddingRight={1}
         alignItems="center"
         gap={1}
       >
-        <text style={{ fg: THEME_COLORS.text.secondary }}>Filter:</text>
+        <text style={{ fg: "#8b949e" }}>Filter:</text>
         <For each={["all", "active", "paused"] as const}>
           {(status) => {
             const isActive = () => filterStatus() === status
@@ -80,11 +79,11 @@ export function CloudflareZones(props: { data: DashboardData }) {
               <box
                 paddingLeft={1}
                 paddingRight={1}
-                backgroundColor={isActive() ? THEME_COLORS.background.tertiary : "transparent"}
-                borderColor={isActive() ? PROVIDER_COLORS.cloudflare.primary : "transparent"}
+                backgroundColor={isActive() ? "#21262d" : "transparent"}
+                borderColor={isActive() ? "#f38020" : "transparent"}
                 border={isActive() ? ["bottom"] : undefined}
               >
-                <text style={{ fg: isActive() ? PROVIDER_COLORS.cloudflare.primary : THEME_COLORS.text.secondary }}>
+                <text style={{ fg: isActive() ? "#f38020" : "#8b949e" }}>
                   {status.charAt(0).toUpperCase() + status.slice(1)}
                 </text>
               </box>
@@ -92,9 +91,9 @@ export function CloudflareZones(props: { data: DashboardData }) {
           }}
         </For>
         <box flexGrow={1} />
-        <text style={{ fg: THEME_COLORS.text.muted }}>
-          <span style={{ fg: THEME_COLORS.text.secondary }}>f</span> filter
-          <span style={{ fg: THEME_COLORS.text.secondary }}>j/k</span> select
+        <text style={{ fg: "#484f58" }}>
+          <span style={{ fg: "#8b949e" }}>f</span> filter
+          <span style={{ fg: "#8b949e" }}>j/k</span> select
         </text>
       </box>
 
@@ -104,7 +103,7 @@ export function CloudflareZones(props: { data: DashboardData }) {
         <box
           border
           borderStyle="rounded"
-          borderColor={THEME_COLORS.border.default}
+          borderColor="#30363d"
           flexDirection="column"
           flexGrow={2}
           title=" Zones "
@@ -113,17 +112,17 @@ export function CloudflareZones(props: { data: DashboardData }) {
           {/* Header */}
           <box
             flexDirection="row"
-            backgroundColor={THEME_COLORS.background.tertiary}
+            backgroundColor="#21262d"
             paddingLeft={1}
             paddingRight={1}
             height={1}
           >
-            <text width={3} style={{ fg: THEME_COLORS.text.secondary }}><b>St</b></text>
-            <text width={24} style={{ fg: THEME_COLORS.text.secondary }}><b>Zone Name</b></text>
-            <text width={10} style={{ fg: THEME_COLORS.text.secondary }}><b>Plan</b></text>
-            <text width={12} style={{ fg: THEME_COLORS.text.secondary }}><b>Requests</b></text>
-            <text width={12} style={{ fg: THEME_COLORS.text.secondary }}><b>Bandwidth</b></text>
-            <text width={8} style={{ fg: THEME_COLORS.text.secondary }}><b>Cache%</b></text>
+            <text width={3} style={{ fg: "#8b949e" }}><b>St</b></text>
+            <text width={24} style={{ fg: "#8b949e" }}><b>Zone Name</b></text>
+            <text width={10} style={{ fg: "#8b949e" }}><b>Plan</b></text>
+            <text width={12} style={{ fg: "#8b949e" }}><b>Requests</b></text>
+            <text width={12} style={{ fg: "#8b949e" }}><b>Bandwidth</b></text>
+            <text width={8} style={{ fg: "#8b949e" }}><b>Cache%</b></text>
           </box>
 
           {/* Scrollable content */}
@@ -131,7 +130,7 @@ export function CloudflareZones(props: { data: DashboardData }) {
             when={filteredZones().length > 0}
             fallback={
               <box padding={1} flexGrow={1} alignItems="center" justifyContent="center">
-                <text style={{ fg: THEME_COLORS.text.muted }}>No zones found</text>
+                <text style={{ fg: "#484f58" }}>No zones found</text>
               </box>
             }
           >
@@ -151,7 +150,7 @@ export function CloudflareZones(props: { data: DashboardData }) {
                       paddingLeft={1}
                       paddingRight={1}
                       height={1}
-                      backgroundColor={isSelected() ? THEME_COLORS.background.tertiary : "transparent"}
+                      backgroundColor={isSelected() ? "#21262d" : "transparent"}
                     >
                       <text
                         width={3}
@@ -161,7 +160,7 @@ export function CloudflareZones(props: { data: DashboardData }) {
                       </text>
                       <text
                         width={24}
-                        style={{ fg: isSelected() ? THEME_COLORS.text.primary : THEME_COLORS.text.secondary }}
+                        style={{ fg: isSelected() ? "#c9d1d9" : "#8b949e" }}
                       >
                         {zone.zoneName.length > 22
                           ? zone.zoneName.slice(0, 20) + ".."
@@ -169,25 +168,25 @@ export function CloudflareZones(props: { data: DashboardData }) {
                       </text>
                       <text
                         width={10}
-                        style={{ fg: PROVIDER_COLORS.cloudflare.primary }}
+                        style={{ fg: "#f38020" }}
                       >
                         {zone.plan}
                       </text>
                       <text
                         width={12}
-                        style={{ fg: isSelected() ? STATUS_COLORS.info : THEME_COLORS.text.secondary }}
+                        style={{ fg: isSelected() ? "#58a6ff" : "#8b949e" }}
                       >
                         {formatNumber(zone.requests30d)}
                       </text>
                       <text
                         width={12}
-                        style={{ fg: isSelected() ? STATUS_COLORS.success : THEME_COLORS.text.secondary }}
+                        style={{ fg: isSelected() ? "#7ee787" : "#8b949e" }}
                       >
                         {formatBytes(zone.bandwidth30d)}
                       </text>
                       <text
                         width={8}
-                        style={{ fg: zone.cacheHitRate > 80 ? STATUS_COLORS.success : zone.cacheHitRate > 50 ? FINDING_COLORS.warning : FINDING_COLORS.error }}
+                        style={{ fg: zone.cacheHitRate > 80 ? "#7ee787" : zone.cacheHitRate > 50 ? "#d29922" : "#f85149" }}
                       >
                         {zone.cacheHitRate > 0 ? zone.cacheHitRate.toFixed(1) + "%" : "--"}
                       </text>
@@ -203,7 +202,7 @@ export function CloudflareZones(props: { data: DashboardData }) {
         <box
           border
           borderStyle="rounded"
-          borderColor={THEME_COLORS.border.default}
+          borderColor="#30363d"
           flexDirection="column"
           width={32}
           title=" Details "
@@ -213,7 +212,7 @@ export function CloudflareZones(props: { data: DashboardData }) {
             when={filteredZones()[selectedIndex()]}
             fallback={
               <box padding={1}>
-                <text style={{ fg: THEME_COLORS.text.muted }}>Select a zone</text>
+                <text style={{ fg: "#484f58" }}>Select a zone</text>
               </box>
             }
           >
@@ -223,56 +222,56 @@ export function CloudflareZones(props: { data: DashboardData }) {
 
               return (
                 <box flexDirection="column" padding={1} gap={1}>
-                  <text style={{ fg: PROVIDER_COLORS.cloudflare.primary }}><b>{zone().zoneName}</b></text>
+                  <text style={{ fg: "#f38020" }}><b>{zone().zoneName}</b></text>
 
                   <box marginTop={1}>
-                    <text style={{ fg: THEME_COLORS.text.secondary }}>Status</text>
+                    <text style={{ fg: "#8b949e" }}>Status</text>
                     <text style={{ fg: statusColor() }}>
                       {getStatusIcon(zone().status)} {zone().status.toUpperCase()}
                     </text>
                   </box>
 
                   <box>
-                    <text style={{ fg: THEME_COLORS.text.secondary }}>Plan</text>
-                    <text style={{ fg: PROVIDER_COLORS.cloudflare.primary }}>{zone().plan}</text>
+                    <text style={{ fg: "#8b949e" }}>Plan</text>
+                    <text style={{ fg: "#f38020" }}>{zone().plan}</text>
                   </box>
 
                   <box>
-                    <text style={{ fg: THEME_COLORS.text.secondary }}>Zone ID</text>
-                    <text style={{ fg: THEME_COLORS.text.muted }}>{zone().zoneId.slice(0, 12)}...</text>
+                    <text style={{ fg: "#8b949e" }}>Zone ID</text>
+                    <text style={{ fg: "#484f58" }}>{zone().zoneId.slice(0, 12)}...</text>
                   </box>
 
                   <box marginTop={1}>
-                    <text style={{ fg: THEME_COLORS.text.secondary }}>Requests (30d)</text>
-                    <text style={{ fg: STATUS_COLORS.info }}>{formatNumber(zone().requests30d)}</text>
+                    <text style={{ fg: "#8b949e" }}>Requests (30d)</text>
+                    <text style={{ fg: "#58a6ff" }}>{formatNumber(zone().requests30d)}</text>
                   </box>
 
                   <box>
-                    <text style={{ fg: THEME_COLORS.text.secondary }}>Bandwidth (30d)</text>
-                    <text style={{ fg: STATUS_COLORS.success }}>{formatBytes(zone().bandwidth30d)}</text>
+                    <text style={{ fg: "#8b949e" }}>Bandwidth (30d)</text>
+                    <text style={{ fg: "#7ee787" }}>{formatBytes(zone().bandwidth30d)}</text>
                   </box>
 
                   <box>
-                    <text style={{ fg: THEME_COLORS.text.secondary }}>Cache Hit Rate</text>
-                    <text style={{ fg: zone().cacheHitRate > 80 ? STATUS_COLORS.success : zone().cacheHitRate > 50 ? FINDING_COLORS.warning : FINDING_COLORS.error }}>
+                    <text style={{ fg: "#8b949e" }}>Cache Hit Rate</text>
+                    <text style={{ fg: zone().cacheHitRate > 80 ? "#7ee787" : zone().cacheHitRate > 50 ? "#d29922" : "#f85149" }}>
                       {zone().cacheHitRate > 0 ? zone().cacheHitRate.toFixed(1) + "%" : "No data"}
                     </text>
                   </box>
 
                   <Show when={zone().threats30d > 0}>
                     <box>
-                      <text style={{ fg: THEME_COLORS.text.secondary }}>Threats Blocked</text>
-                      <text style={{ fg: FINDING_COLORS.error }}>{formatNumber(zone().threats30d)}</text>
+                      <text style={{ fg: "#8b949e" }}>Threats Blocked</text>
+                      <text style={{ fg: "#f85149" }}>{formatNumber(zone().threats30d)}</text>
                     </box>
                   </Show>
 
                   {/* Cache hit rate bar */}
                   <box marginTop={2}>
-                    <text style={{ fg: THEME_COLORS.text.muted }}>Cache efficiency:</text>
+                    <text style={{ fg: "#484f58" }}>Cache efficiency:</text>
                     <box marginTop={1}>
                       <text>
-                        <span style={{ fg: STATUS_COLORS.success }}>{"█".repeat(Math.round(zone().cacheHitRate / 5))}</span>
-                        <span style={{ fg: THEME_COLORS.background.tertiary }}>{"░".repeat(20 - Math.round(zone().cacheHitRate / 5))}</span>
+                        <span style={{ fg: "#7ee787" }}>{"█".repeat(Math.round(zone().cacheHitRate / 5))}</span>
+                        <span style={{ fg: "#21262d" }}>{"░".repeat(20 - Math.round(zone().cacheHitRate / 5))}</span>
                       </text>
                     </box>
                   </box>
@@ -290,8 +289,8 @@ export function CloudflareZones(props: { data: DashboardData }) {
         flexDirection="row"
         gap={2}
       >
-        <text style={{ fg: THEME_COLORS.text.muted }}>
-          Showing <span style={{ fg: STATUS_COLORS.info }}>{filteredZones().length}</span> of {props.data.zones.length} zones
+        <text style={{ fg: "#484f58" }}>
+          Showing <span style={{ fg: "#58a6ff" }}>{filteredZones().length}</span> of {props.data.zones.length} zones
         </text>
       </box>
     </box>

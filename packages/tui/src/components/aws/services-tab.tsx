@@ -1,6 +1,6 @@
 import { createSignal, createMemo, For, Show } from "solid-js"
 import { useKeyboard } from "@opentui/solid"
-import type { DashboardData, ServiceCost } from "../providers/aws/client"
+import type { DashboardData, ServiceCost } from "../../providers/aws/client"
 import { THEME_COLORS, PROVIDER_COLORS, STATUS_COLORS, FINDING_COLORS } from "../../constants/colors"
 
 // Service categories for grouping

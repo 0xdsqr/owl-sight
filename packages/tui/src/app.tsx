@@ -18,6 +18,7 @@ import { OverviewTab } from "./components/aws/overview-tab";
 import { ServicesTab } from "./components/aws/services-tab";
 import { TrendTab } from "./components/aws/trend-tab";
 import { AuditTab } from "./components/aws/audit-tab";
+import { S3Tab } from "./components/aws/s3-tab";
 import { SettingsTab } from "./components/common/settings-tab";
 import {
   getAvailableProfiles,
@@ -51,7 +52,8 @@ const AWS_TABS = [
   { key: "2", name: "Services", icon: "$" },
   { key: "3", name: "Trend", icon: "^" },
   { key: "4", name: "Audit", icon: "!" },
-  { key: "5", name: "Settings", icon: "*" },
+  { key: "5", name: "S3", icon: "#" },
+  { key: "6", name: "Settings", icon: "*" },
 ];
 
 // Cloudflare Tabs
@@ -179,7 +181,7 @@ export function App(props: { config: AppConfig }) {
     const tabs = activeProvider() === "aws" ? AWS_TABS : CF_TABS;
 
     // Tab switching with number keys
-    if (key.raw >= "1" && key.raw <= "5") {
+    if (key.raw >= "1" && key.raw <= "6") {
       setActiveTab(parseInt(key.raw) - 1);
       return;
     }
@@ -271,7 +273,7 @@ export function App(props: { config: AppConfig }) {
             <Match when={activeProvider() === "aws" && awsData()}>
               <Switch>
                 <Match when={activeTab() === 0}>
-                  <OverviewTab data={awsData()!} />
+                  <OverviewTab data={awsData()!} onNavigate={setActiveTab} />
                 </Match>
                 <Match when={activeTab() === 1}>
                   <ServicesTab data={awsData()!} />
@@ -283,6 +285,12 @@ export function App(props: { config: AppConfig }) {
                   <AuditTab data={awsData()!} />
                 </Match>
                 <Match when={activeTab() === 4}>
+                  <S3Tab
+                    profile={settings.profiles[0] ?? "default"}
+                    region={settings.regions[0] ?? "us-east-1"}
+                  />
+                </Match>
+                <Match when={activeTab() === 5}>
                   <SettingsTab
                     provider="aws"
                     settings={settings}
@@ -307,7 +315,7 @@ export function App(props: { config: AppConfig }) {
             <Match when={activeProvider() === "cloudflare" && cloudflareData()}>
               <Switch>
                 <Match when={activeTab() === 0}>
-                  <CloudflareOverview data={cloudflareData()!} />
+                  <CloudflareOverview data={cloudflareData()!} onNavigate={setActiveTab} />
                 </Match>
                 <Match when={activeTab() === 1}>
                   <CloudflareZones data={cloudflareData()!} />

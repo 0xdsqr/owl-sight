@@ -1,453 +1,423 @@
-import { For, Show } from "solid-js"
-import type { DashboardData } from "../providers/aws/client"
-import { THEME_COLORS, PROVIDER_COLORS, STATUS_COLORS, FINDING_COLORS, SEMANTIC_COLORS, BRAND_COLORS } from "../../constants/colors"
+import { createSignal, createMemo, For, Show } from "solid-js"
+import { useKeyboard } from "@opentui/solid"
+import type { DashboardData } from "../../providers/aws/client"
+import {
+  OverviewSection,
+  StatsBar,
+  ProgressBar,
+  formatCurrency,
+  formatChange,
+} from "../common/overview-section"
 
-// Service icons (ASCII art style)
-const SERVICE_ICONS: Record<string, string> = {
-  "Amazon EC2": "[EC2]",
-  "Amazon S3": "[S3]",
-  "Amazon RDS": "[RDS]",
-  "AWS Lambda": "[LAM]",
-  "Amazon DynamoDB": "[DDB]",
-  "Amazon CloudFront": "[CF]",
-  "Amazon EBS": "[EBS]",
-  "Amazon VPC": "[VPC]",
-  "AWS Support": "[SUP]",
-  "Tax": "[TAX]",
-  "default": "[...]",
+// Section types for navigation
+type Section = "alerts" | "services" | "resources" | "budgets" | "costs"
+const SECTIONS: Section[] = ["alerts", "services", "resources", "budgets", "costs"]
+
+const colors = {
+  bg: "#0d1117",
+  bgAlt: "#161b22",
+  bgHover: "#21262d",
+  border: "#30363d",
+  text: "#c9d1d9",
+  textMuted: "#8b949e",
+  textDim: "#484f58",
+  accent: "#ff9900",
+  blue: "#58a6ff",
+  green: "#7ee787",
+  yellow: "#d29922",
+  red: "#f85149",
+  orange: "#f0883e",
 }
 
-export function OverviewTab(props: { data: DashboardData }) {
-  return (
-    <box flexDirection="column" flexGrow={1} gap={1}>
-      {/* Top Stats Row */}
-      <TopStatsBar data={props.data} />
-      
-      {/* Main Content */}
-      <box flexDirection="row" gap={1} flexGrow={1}>
-        {/* Left: Cost Summary + Top Services */}
-        <box flexDirection="column" gap={1} flexGrow={2}>
-          <CostSummaryTable data={props.data} />
-          <TopServicesPanel data={props.data} />
-        </box>
-        
-        {/* Right: Budgets + EC2 */}
-        <box flexDirection="column" gap={1} flexGrow={1}>
-          <BudgetsPanel budgets={props.data.budgets} />
-          <EC2Panel ec2={props.data.ec2} />
-        </box>
-      </box>
-    </box>
-  )
-}
+export function OverviewTab(props: { data: DashboardData; onNavigate?: (tab: number) => void }) {
+  // Navigation state
+  const [focusedSection, setFocusedSection] = createSignal<Section>("alerts")
+  const [selectedIdx, setSelectedIdx] = createSignal(0)
 
-// ============================================================================
-// Top Stats Bar - Quick overview numbers
-// ============================================================================
-
-function TopStatsBar(props: { data: DashboardData }) {
-  const formatCurrency = (amount: number) => {
-    if (amount >= 1000) return `$${(amount / 1000).toFixed(1)}k`
-    return `$${amount.toFixed(2)}`
-  }
-  
-  const change = () => props.data.totals.change
-  const changeColor = () => change() > 5 ? FINDING_COLORS.error : change() < -5 ? STATUS_COLORS.success : THEME_COLORS.text.secondary
-  const changeArrow = () => change() > 0 ? "+" : ""
-  
-  return (
-    <box 
-      flexDirection="row" 
-      gap={2} 
-      height={3}
-      backgroundColor={THEME_COLORS.background.secondary}
-      borderColor={THEME_COLORS.border.default}
-      border
-      borderStyle="rounded"
-      paddingLeft={2}
-      paddingRight={2}
-      alignItems="center"
-    >
-      {/* Current Period Cost */}
-      <box flexDirection="column" flexGrow={1}>
-        <text style={{ fg: THEME_COLORS.text.secondary }}>Current Period</text>
-        <text style={{ fg: PROVIDER_COLORS.aws.primary }}>
-          <b>{formatCurrency(props.data.totals.currentPeriod)}</b>
-        </text>
-      </box>
-      
-      <text style={{ fg: THEME_COLORS.border.default }}>|</text>
-      
-      {/* Change */}
-      <box flexDirection="column" flexGrow={1}>
-        <text style={{ fg: THEME_COLORS.text.secondary }}>vs Last Period</text>
-        <text style={{ fg: changeColor() }}>
-          {changeArrow()}{change().toFixed(1)}%
-        </text>
-      </box>
-      
-      <text style={{ fg: THEME_COLORS.border.default }}>|</text>
-      
-      {/* Profiles */}
-      <box flexDirection="column" flexGrow={1}>
-        <text style={{ fg: THEME_COLORS.text.secondary }}>Profiles</text>
-        <text style={{ fg: STATUS_COLORS.info }}>{props.data.costs.length}</text>
-      </box>
-      
-      <text style={{ fg: THEME_COLORS.border.default }}>|</text>
-      
-      {/* EC2 Running */}
-      <box flexDirection="column" flexGrow={1}>
-        <text style={{ fg: THEME_COLORS.text.secondary }}>EC2 Running</text>
-        <text style={{ fg: STATUS_COLORS.success }}>
-          {props.data.ec2.reduce((sum, e) => sum + e.running, 0)}
-        </text>
-      </box>
-      
-      <text style={{ fg: THEME_COLORS.border.default }}>|</text>
-      
-      {/* Audit Issues */}
-      <box flexDirection="column" flexGrow={1}>
-        <text style={{ fg: THEME_COLORS.text.secondary }}>Audit Issues</text>
-        <text style={{ fg: props.data.audit.length > 0 ? SEMANTIC_COLORS.warning : STATUS_COLORS.success }}>
-          {props.data.audit.length}
-        </text>
-      </box>
-    </box>
-  )
-}
-
-// ============================================================================
-// Cost Summary Table
-// ============================================================================
-
-function CostSummaryTable(props: { data: DashboardData }) {
-  const formatCurrency = (amount: number) => {
-    if (amount >= 1000) return `$${(amount / 1000).toFixed(1)}k`
-    return `$${amount.toFixed(2)}`
-  }
-  
-  const formatChange = (change: number) => {
-    const arrow = change > 0 ? "^" : change < 0 ? "v" : "-"
-    const color = change > 5 ? FINDING_COLORS.error : change < -5 ? STATUS_COLORS.success : THEME_COLORS.text.secondary
-    return { text: `${arrow}${Math.abs(change).toFixed(1)}%`, color }
-  }
-
-  return (
-    <box 
-      border 
-      borderStyle="rounded" 
-      borderColor={THEME_COLORS.border.default}
-      flexDirection="column"
-      title=" Cost by Profile "
-      titleAlignment="left"
-    >
-      {/* Header */}
-      <box 
-        flexDirection="row" 
-        backgroundColor={THEME_COLORS.background.tertiary}
-        paddingLeft={1}
-        paddingRight={1}
-        height={1}
-      >
-        <text width={16} style={{ fg: THEME_COLORS.text.secondary }}><b>Profile</b></text>
-        <text width={12} style={{ fg: THEME_COLORS.text.secondary }}><b>Account</b></text>
-        <text width={12} style={{ fg: THEME_COLORS.text.secondary }}><b>Last</b></text>
-        <text width={12} style={{ fg: THEME_COLORS.text.secondary }}><b>Current</b></text>
-        <text width={10} style={{ fg: THEME_COLORS.text.secondary }}><b>Change</b></text>
-      </box>
-      
-      {/* Data rows */}
-      <For each={props.data.costs}>
-        {(cost, idx) => {
-          const change = formatChange(cost.change)
-          const bgColor = idx() % 2 === 0 ? THEME_COLORS.background.primary : THEME_COLORS.background.secondary
-          return (
-            <box 
-              flexDirection="row" 
-              paddingLeft={1}
-              paddingRight={1}
-              height={1}
-              backgroundColor={bgColor}
-            >
-              <text width={16} style={{ fg: THEME_COLORS.text.primary }}>{cost.profile}</text>
-              <text width={12} style={{ fg: THEME_COLORS.text.muted }}>{cost.accountId.slice(-8)}</text>
-              <text width={12} style={{ fg: THEME_COLORS.text.secondary }}>{formatCurrency(cost.lastPeriod)}</text>
-              <text width={12} style={{ fg: THEME_COLORS.text.primary }}>{formatCurrency(cost.currentPeriod)}</text>
-              <text width={10} style={{ fg: change.color }}>{change.text}</text>
-            </box>
-          )
-        }}
-      </For>
-      
-      {/* Total row */}
-      <box 
-        flexDirection="row" 
-        backgroundColor={THEME_COLORS.background.tertiary}
-        paddingLeft={1}
-        paddingRight={1}
-        height={1}
-        borderColor={THEME_COLORS.border.default}
-        border={["top"]}
-      >
-        <text width={16} style={{ fg: PROVIDER_COLORS.aws.primary }}><b>TOTAL</b></text>
-        <text width={12} style={{ fg: THEME_COLORS.text.muted }}>--</text>
-        <text width={12} style={{ fg: PROVIDER_COLORS.aws.primary }}>{formatCurrency(props.data.totals.lastPeriod)}</text>
-        <text width={12} style={{ fg: PROVIDER_COLORS.aws.primary }}><b>{formatCurrency(props.data.totals.currentPeriod)}</b></text>
-        {(() => {
-          const change = formatChange(props.data.totals.change)
-          return <text width={10} style={{ fg: change.color }}><b>{change.text}</b></text>
-        })()}
-      </box>
-    </box>
-  )
-}
-
-// ============================================================================
-// Top Services Panel - Shows top spending services with icons
-// ============================================================================
-
-function TopServicesPanel(props: { data: DashboardData }) {
-  const formatCurrency = (amount: number) => {
-    if (amount >= 1000) return `$${(amount / 1000).toFixed(1)}k`
-    return `$${amount.toFixed(2)}`
-  }
-  
-  // Aggregate services across all profiles
-  const topServices = () => {
-    const serviceMap = new Map<string, number>()
-    for (const cost of props.data.costs) {
-      for (const svc of cost.byService) {
-        serviceMap.set(svc.service, (serviceMap.get(svc.service) ?? 0) + svc.cost)
-      }
+  // Computed data
+  const alerts = createMemo(() => {
+    const items: Array<{ type: string; icon: string; color: string; text: string }> = []
+    
+    // Budget alerts
+    props.data.budgets
+      .filter(b => b.status !== "ok")
+      .forEach(b => {
+        items.push({
+          type: "budget",
+          icon: b.status === "exceeded" ? "!" : "~",
+          color: b.status === "exceeded" ? colors.red : colors.yellow,
+          text: `Budget "${b.name}" at ${b.percentUsed.toFixed(0)}% - ${b.status}`,
+        })
+      })
+    
+    // Audit findings grouped
+    const stoppedCount = props.data.audit.filter(a => a.type === "stopped_instance").length
+    const volumeCount = props.data.audit.filter(a => a.type === "unattached_volume").length
+    const eipCount = props.data.audit.filter(a => a.type === "unused_eip").length
+    
+    if (stoppedCount > 0) {
+      const waste = props.data.audit
+        .filter(a => a.type === "stopped_instance")
+        .reduce((sum, a) => sum + (a.estimatedWaste ?? 0), 0)
+      items.push({
+        type: "stopped",
+        icon: "~",
+        color: colors.yellow,
+        text: `${stoppedCount} stopped EC2 instance${stoppedCount > 1 ? "s" : ""} (~$${waste}/mo waste)`,
+      })
     }
+    
+    if (volumeCount > 0) {
+      const waste = props.data.audit
+        .filter(a => a.type === "unattached_volume")
+        .reduce((sum, a) => sum + (a.estimatedWaste ?? 0), 0)
+      items.push({
+        type: "volume",
+        icon: "~",
+        color: colors.yellow,
+        text: `${volumeCount} unattached EBS volume${volumeCount > 1 ? "s" : ""} (~$${waste.toFixed(0)}/mo waste)`,
+      })
+    }
+    
+    if (eipCount > 0) {
+      items.push({
+        type: "eip",
+        icon: "~",
+        color: colors.orange,
+        text: `${eipCount} unused Elastic IP${eipCount > 1 ? "s" : ""} (~$${(eipCount * 3.65).toFixed(0)}/mo waste)`,
+      })
+    }
+    
+    return items
+  })
+
+  const topServices = createMemo(() => {
+    const serviceMap = new Map<string, number>()
+    props.data.costs.forEach(cost => {
+      cost.byService.forEach(svc => {
+        serviceMap.set(svc.service, (serviceMap.get(svc.service) ?? 0) + svc.cost)
+      })
+    })
     return Array.from(serviceMap.entries())
       .map(([service, cost]) => ({ service, cost }))
       .sort((a, b) => b.cost - a.cost)
       .slice(0, 5)
-  }
-  
-  const maxCost = () => topServices()[0]?.cost ?? 1
-  
-  const getIcon = (service: string) => SERVICE_ICONS[service] ?? SERVICE_ICONS["default"]
-  
-  const getBarColor = (idx: number) => {
-    const colors = [PROVIDER_COLORS.aws.primary, SEMANTIC_COLORS.warning, FINDING_COLORS.warning, BRAND_COLORS.owlPurple, STATUS_COLORS.info]
-    return colors[idx] ?? THEME_COLORS.text.secondary
-  }
+  })
+
+  const resources = createMemo(() => {
+    const ec2Running = props.data.ec2.reduce((sum, e) => sum + e.running, 0)
+    const ec2Stopped = props.data.ec2.reduce((sum, e) => sum + e.stopped, 0)
+    
+    return [
+      { name: "EC2 Instances", value: `${ec2Running} run`, secondary: `${ec2Stopped} stop`, color: colors.green, secondaryColor: ec2Stopped > 0 ? colors.yellow : colors.textDim },
+      { name: "Budgets", value: `${props.data.budgets.length}`, color: colors.blue },
+      { name: "Profiles", value: `${props.data.costs.length}`, color: colors.blue },
+      { name: "Regions", value: `${new Set(props.data.ec2.map(e => e.region)).size}`, color: colors.textMuted },
+    ]
+  })
+
+  const maxServiceCost = () => topServices()[0]?.cost ?? 1
+
+  // Get items for current section
+  const currentSectionItems = createMemo(() => {
+    switch (focusedSection()) {
+      case "alerts": return alerts()
+      case "services": return topServices()
+      case "resources": return resources()
+      case "budgets": return props.data.budgets
+      case "costs": return props.data.costs
+      default: return []
+    }
+  })
+
+  // Keyboard navigation
+  useKeyboard((key) => {
+    const sections = alerts().length > 0 ? SECTIONS : SECTIONS.filter(s => s !== "alerts")
+    const currentIdx = sections.indexOf(focusedSection())
+    const maxItems = currentSectionItems().length - 1
+
+    // Section navigation
+    if (key.raw === "j" || key.name === "down") {
+      if (key.shift || key.ctrl) {
+        // Move to next section
+        const nextIdx = (currentIdx + 1) % sections.length
+        setFocusedSection(sections[nextIdx]!)
+        setSelectedIdx(0)
+      } else {
+        // Move within section
+        setSelectedIdx(i => Math.min(maxItems, i + 1))
+      }
+      return
+    }
+    if (key.raw === "k" || key.name === "up") {
+      if (key.shift || key.ctrl) {
+        // Move to previous section
+        const prevIdx = (currentIdx - 1 + sections.length) % sections.length
+        setFocusedSection(sections[prevIdx]!)
+        setSelectedIdx(0)
+      } else {
+        // Move within section
+        setSelectedIdx(i => Math.max(0, i - 1))
+      }
+      return
+    }
+    if (key.name === "tab") {
+      if (key.shift) {
+        const prevIdx = (currentIdx - 1 + sections.length) % sections.length
+        setFocusedSection(sections[prevIdx]!)
+      } else {
+        const nextIdx = (currentIdx + 1) % sections.length
+        setFocusedSection(sections[nextIdx]!)
+      }
+      setSelectedIdx(0)
+      return
+    }
+    if (key.raw === "g") {
+      setFocusedSection(sections[0]!)
+      setSelectedIdx(0)
+      return
+    }
+    if (key.raw === "G") {
+      setFocusedSection(sections[sections.length - 1]!)
+      setSelectedIdx(0)
+      return
+    }
+    
+    // Drill-down
+    if (key.name === "return" || key.raw === "l") {
+      if (focusedSection() === "services" && props.onNavigate) {
+        props.onNavigate(1) // Services tab
+      } else if (focusedSection() === "alerts" && props.onNavigate) {
+        props.onNavigate(3) // Audit tab
+      } else if (focusedSection() === "budgets" && props.onNavigate) {
+        props.onNavigate(3) // Audit tab (shows budget alerts)
+      }
+      return
+    }
+  })
+
+  // Stats bar items
+  const statsItems = createMemo(() => [
+    { label: "Current Period", value: formatCurrency(props.data.totals.currentPeriod), color: colors.accent },
+    { label: "vs Last Period", value: formatChange(props.data.totals.change).text, color: formatChange(props.data.totals.change).color },
+    { label: "EC2 Running", value: props.data.ec2.reduce((sum, e) => sum + e.running, 0).toString(), color: colors.green },
+    { label: "Issues", value: alerts().length.toString(), color: alerts().length > 0 ? colors.orange : colors.green, alert: alerts().length > 0 },
+  ])
+
+  const hasAlerts = () => alerts().length > 0
 
   return (
-    <box 
-      border 
-      borderStyle="rounded" 
-      borderColor={THEME_COLORS.border.default}
-      flexDirection="column"
-      flexGrow={1}
-      title=" Top Services "
-      titleAlignment="left"
-    >
-      <For each={topServices()}>
-        {(svc, idx) => {
-          const barWidth = Math.max(1, Math.round((svc.cost / maxCost()) * 25))
-          return (
-            <box 
-              flexDirection="row" 
-              paddingLeft={1}
-              paddingRight={1}
-              height={1}
-              alignItems="center"
-            >
-              <text width={6} style={{ fg: getBarColor(idx()) }}>{getIcon(svc.service)}</text>
-              <text width={20} style={{ fg: THEME_COLORS.text.primary }}>
-                {svc.service.length > 18 ? svc.service.slice(0, 16) + ".." : svc.service}
-              </text>
-              <text width={10} style={{ fg: THEME_COLORS.text.secondary }}>{formatCurrency(svc.cost)}</text>
-              <text>
-                <span style={{ fg: getBarColor(idx()) }}>{"█".repeat(barWidth)}</span>
-                <span style={{ fg: THEME_COLORS.background.tertiary }}>{"░".repeat(25 - barWidth)}</span>
-              </text>
-            </box>
-          )
-        }}
-      </For>
-    </box>
-  )
-}
+    <box flexDirection="column" flexGrow={1} gap={1}>
+      {/* Stats Bar */}
+      <StatsBar items={statsItems()} accentColor={colors.accent} />
 
-// ============================================================================
-// Budgets Panel
-// ============================================================================
-
-function BudgetsPanel(props: { budgets: DashboardData["budgets"] }) {
-  const formatCurrency = (amount: number) => `$${amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
-  
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "exceeded": return FINDING_COLORS.error
-      case "warning": return FINDING_COLORS.warning
-      default: return STATUS_COLORS.success
-    }
-  }
-  
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "exceeded": return "[!]"
-      case "warning": return "[~]"
-      default: return "[v]"
-    }
-  }
-
-  return (
-    <box 
-      border 
-      borderStyle="rounded" 
-      borderColor={THEME_COLORS.border.default}
-      flexDirection="column"
-      flexGrow={1}
-      title=" Budgets "
-      titleAlignment="left"
-    >
-      <Show 
-        when={props.budgets.length > 0}
-        fallback={
-          <box padding={1} flexGrow={1} alignItems="center" justifyContent="center">
-            <text style={{ fg: THEME_COLORS.text.muted }}>No budgets configured</text>
-            <text style={{ fg: THEME_COLORS.border.default }} marginTop={1}>Set up budgets in AWS Console</text>
+      {/* Alerts Section - only show if there are alerts */}
+      <Show when={hasAlerts()}>
+        <OverviewSection
+          title="Alerts"
+          badge={alerts().length}
+          badgeColor={colors.red}
+          focused={focusedSection() === "alerts"}
+          accentColor={colors.accent}
+        >
+          <box flexDirection="column" paddingLeft={1} paddingRight={1}>
+            <For each={alerts()}>
+              {(alert, idx) => (
+                <box
+                  flexDirection="row"
+                  height={1}
+                  backgroundColor={focusedSection() === "alerts" && selectedIdx() === idx() ? colors.bgHover : "transparent"}
+                >
+                  <text width={3} style={{ fg: alert.color }}>{alert.icon} </text>
+                  <text style={{ fg: focusedSection() === "alerts" && selectedIdx() === idx() ? colors.text : colors.textMuted }}>
+                    {alert.text}
+                  </text>
+                </box>
+              )}
+            </For>
           </box>
-        }
-      >
-        <For each={props.budgets}>
-          {(budget) => {
-            const barWidth = 15
-            const filled = Math.min(Math.round((budget.percentUsed / 100) * barWidth), barWidth)
-            const empty = barWidth - filled
-            const color = getStatusColor(budget.status)
-            
-            return (
-              <box 
-                flexDirection="column" 
-                paddingLeft={1}
-                paddingRight={1}
-                paddingTop={1}
-              >
-                <box flexDirection="row">
-                  <text style={{ fg: color }}>{getStatusIcon(budget.status)} </text>
-                  <text style={{ fg: THEME_COLORS.text.primary }} flexGrow={1}>{budget.name}</text>
-                  <text style={{ fg: color }}>
-                    {budget.percentUsed.toFixed(0)}%
-                  </text>
-                </box>
-                <box flexDirection="row" gap={1} paddingLeft={4}>
-                  <text>
-                    <span style={{ fg: color }}>{"█".repeat(filled)}</span>
-                    <span style={{ fg: THEME_COLORS.background.tertiary }}>{"░".repeat(empty)}</span>
-                  </text>
-                  <text style={{ fg: THEME_COLORS.text.muted }}>
-                    {formatCurrency(budget.actual)}/{formatCurrency(budget.limit)}
-                  </text>
-                </box>
-              </box>
-            )
-          }}
-        </For>
+        </OverviewSection>
       </Show>
-    </box>
-  )
-}
 
-// ============================================================================
-// EC2 Panel
-// ============================================================================
-
-function EC2Panel(props: { ec2: DashboardData["ec2"] }) {
-  // Aggregate by profile
-  const aggregated = () => {
-    const byProfile = new Map<string, { running: number, stopped: number, total: number }>()
-    
-    for (const ec2 of props.ec2) {
-      const existing = byProfile.get(ec2.profile) ?? { running: 0, stopped: 0, total: 0 }
-      existing.running += ec2.running
-      existing.stopped += ec2.stopped
-      existing.total += ec2.total
-      byProfile.set(ec2.profile, existing)
-    }
-    
-    return Array.from(byProfile.entries()).map(([profile, stats]) => ({
-      profile,
-      ...stats,
-    }))
-  }
-  
-  const totals = () => {
-    return props.ec2.reduce(
-      (acc, ec2) => ({
-        running: acc.running + ec2.running,
-        stopped: acc.stopped + ec2.stopped,
-        total: acc.total + ec2.total,
-      }),
-      { running: 0, stopped: 0, total: 0 }
-    )
-  }
-
-  return (
-    <box 
-      border 
-      borderStyle="rounded" 
-      borderColor={THEME_COLORS.border.default}
-      flexDirection="column"
-      flexGrow={1}
-      title=" EC2 Instances "
-      titleAlignment="left"
-    >
-      {/* Header */}
-      <box 
-        flexDirection="row" 
-        backgroundColor={THEME_COLORS.background.tertiary}
-        paddingLeft={1}
-        paddingRight={1}
-        height={1}
-      >
-        <text width={12} style={{ fg: THEME_COLORS.text.secondary }}><b>Profile</b></text>
-        <text width={8} style={{ fg: THEME_COLORS.text.secondary }}><b>Run</b></text>
-        <text width={8} style={{ fg: THEME_COLORS.text.secondary }}><b>Stop</b></text>
-        <text width={6} style={{ fg: THEME_COLORS.text.secondary }}><b>Tot</b></text>
-      </box>
-      
-      <For each={aggregated()}>
-        {(row, idx) => (
-          <box 
-            flexDirection="row" 
-            paddingLeft={1}
-            paddingRight={1}
-            height={1}
-            backgroundColor={idx() % 2 === 0 ? THEME_COLORS.background.primary : THEME_COLORS.background.secondary}
+      {/* Main content row */}
+      <box flexDirection="row" gap={1} flexGrow={1}>
+        {/* Left column */}
+        <box flexDirection="column" gap={1} flexGrow={1}>
+          {/* Top Services */}
+          <OverviewSection
+            title="Top Services"
+            badge={5}
+            focused={focusedSection() === "services"}
+            accentColor={colors.accent}
           >
-            <text width={12} style={{ fg: THEME_COLORS.text.primary }}>{row.profile}</text>
-            <text width={8} style={{ fg: STATUS_COLORS.success }}>{row.running}</text>
-            <text width={8} style={{ fg: row.stopped > 0 ? FINDING_COLORS.warning : THEME_COLORS.text.muted }}>
-              {row.stopped}
-            </text>
-            <text width={6} style={{ fg: THEME_COLORS.text.secondary }}>{row.total}</text>
-          </box>
-        )}
-      </For>
-      
-      {/* Total row */}
-      <box 
-        flexDirection="row" 
-        backgroundColor={THEME_COLORS.background.tertiary}
-        paddingLeft={1}
-        paddingRight={1}
-        height={1}
-        borderColor={THEME_COLORS.border.default}
-        border={["top"]}
-      >
-        <text width={12} style={{ fg: PROVIDER_COLORS.aws.primary }}><b>TOTAL</b></text>
-        <text width={8} style={{ fg: STATUS_COLORS.success }}><b>{totals().running}</b></text>
-        <text width={8} style={{ fg: totals().stopped > 0 ? FINDING_COLORS.warning : THEME_COLORS.text.muted }}>
-          <b>{totals().stopped}</b>
+            <box flexDirection="column" paddingLeft={1} paddingRight={1}>
+              <For each={topServices()}>
+                {(svc, idx) => {
+                  const barWidth = Math.max(1, Math.round((svc.cost / maxServiceCost()) * 20))
+                  const isSelected = focusedSection() === "services" && selectedIdx() === idx()
+                  const barColor = [colors.accent, colors.orange, colors.yellow, "#a371f7", colors.blue][idx()] ?? colors.textMuted
+                  return (
+                    <box
+                      flexDirection="row"
+                      height={1}
+                      backgroundColor={isSelected ? colors.bgHover : "transparent"}
+                      alignItems="center"
+                    >
+                      <text width={18} style={{ fg: isSelected ? colors.text : colors.textMuted }}>
+                        {isSelected ? "> " : "  "}{svc.service.length > 14 ? svc.service.slice(0, 12) + ".." : svc.service}
+                      </text>
+                      <text width={9} style={{ fg: colors.text }}>{formatCurrency(svc.cost)}</text>
+                      <text>
+                        <span style={{ fg: barColor }}>{"█".repeat(barWidth)}</span>
+                        <span style={{ fg: colors.bgHover }}>{"░".repeat(20 - barWidth)}</span>
+                      </text>
+                    </box>
+                  )
+                }}
+              </For>
+            </box>
+          </OverviewSection>
+
+          {/* Budgets */}
+          <OverviewSection
+            title="Budgets"
+            badge={props.data.budgets.length}
+            focused={focusedSection() === "budgets"}
+            accentColor={colors.accent}
+          >
+            <Show
+              when={props.data.budgets.length > 0}
+              fallback={
+                <box padding={1} alignItems="center" justifyContent="center" flexGrow={1}>
+                  <text style={{ fg: colors.textDim }}>No budgets configured</text>
+                </box>
+              }
+            >
+              <box flexDirection="column" paddingLeft={1} paddingRight={1}>
+                <For each={props.data.budgets}>
+                  {(budget, idx) => {
+                    const isSelected = focusedSection() === "budgets" && selectedIdx() === idx()
+                    const statusColor = budget.status === "exceeded" ? colors.red : budget.status === "warning" ? colors.yellow : colors.green
+                    const statusIcon = budget.status === "exceeded" ? "!" : budget.status === "warning" ? "~" : "v"
+                    return (
+                      <box
+                        flexDirection="column"
+                        backgroundColor={isSelected ? colors.bgHover : "transparent"}
+                        paddingTop={idx() > 0 ? 1 : 0}
+                      >
+                        <box flexDirection="row" height={1}>
+                          <text width={3} style={{ fg: statusColor }}>{statusIcon} </text>
+                          <text style={{ fg: isSelected ? colors.text : colors.textMuted }} flexGrow={1}>
+                            {budget.name}
+                          </text>
+                          <text style={{ fg: statusColor }}>{budget.percentUsed.toFixed(0)}%</text>
+                        </box>
+                        <box flexDirection="row" paddingLeft={3} height={1}>
+                          <ProgressBar percent={budget.percentUsed} width={15} color={statusColor} />
+                          <text style={{ fg: colors.textDim }}> {formatCurrency(budget.actual)}/{formatCurrency(budget.limit)}</text>
+                        </box>
+                      </box>
+                    )
+                  }}
+                </For>
+              </box>
+            </Show>
+          </OverviewSection>
+        </box>
+
+        {/* Right column */}
+        <box flexDirection="column" gap={1} flexGrow={1}>
+          {/* Resources */}
+          <OverviewSection
+            title="Resources"
+            focused={focusedSection() === "resources"}
+            accentColor={colors.accent}
+          >
+            <box flexDirection="column" paddingLeft={1} paddingRight={1}>
+              <For each={resources()}>
+                {(res, idx) => {
+                  const isSelected = focusedSection() === "resources" && selectedIdx() === idx()
+                  return (
+                    <box
+                      flexDirection="row"
+                      height={1}
+                      backgroundColor={isSelected ? colors.bgHover : "transparent"}
+                    >
+                      <text width={16} style={{ fg: isSelected ? colors.text : colors.textMuted }}>
+                        {isSelected ? "> " : "  "}{res.name}
+                      </text>
+                      <text style={{ fg: res.color }}>{res.value}</text>
+                      <Show when={res.secondary}>
+                        <text style={{ fg: res.secondaryColor }}> {res.secondary}</text>
+                      </Show>
+                    </box>
+                  )
+                }}
+              </For>
+            </box>
+          </OverviewSection>
+
+          {/* Cost by Profile */}
+          <OverviewSection
+            title="Cost by Profile"
+            badge={props.data.costs.length}
+            focused={focusedSection() === "costs"}
+            accentColor={colors.accent}
+          >
+            <box flexDirection="column">
+              {/* Header */}
+              <box flexDirection="row" backgroundColor={colors.bgHover} paddingLeft={1} paddingRight={1} height={1}>
+                <text width={12} style={{ fg: colors.textMuted }}>Profile</text>
+                <text width={10} style={{ fg: colors.textMuted }}>Current</text>
+                <text width={8} style={{ fg: colors.textMuted }}>Change</text>
+              </box>
+              
+              <For each={props.data.costs}>
+                {(cost, idx) => {
+                  const isSelected = focusedSection() === "costs" && selectedIdx() === idx()
+                  const change = formatChange(cost.change)
+                  return (
+                    <box
+                      flexDirection="row"
+                      paddingLeft={1}
+                      paddingRight={1}
+                      height={1}
+                      backgroundColor={isSelected ? colors.bgHover : (idx() % 2 === 0 ? colors.bg : colors.bgAlt)}
+                    >
+                      <text width={12} style={{ fg: isSelected ? colors.text : colors.textMuted }}>
+                        {isSelected ? ">" : " "}{cost.profile.slice(0, 10)}
+                      </text>
+                      <text width={10} style={{ fg: colors.text }}>{formatCurrency(cost.currentPeriod)}</text>
+                      <text width={8} style={{ fg: change.color }}>{change.text}</text>
+                    </box>
+                  )
+                }}
+              </For>
+              
+              {/* Total */}
+              <box flexDirection="row" backgroundColor={colors.bgHover} paddingLeft={1} paddingRight={1} height={1} border={["top"]} borderColor={colors.border}>
+                <text width={12} style={{ fg: colors.accent }}><b>TOTAL</b></text>
+                <text width={10} style={{ fg: colors.accent }}><b>{formatCurrency(props.data.totals.currentPeriod)}</b></text>
+                <text width={8} style={{ fg: formatChange(props.data.totals.change).color }}>
+                  <b>{formatChange(props.data.totals.change).text}</b>
+                </text>
+              </box>
+            </box>
+          </OverviewSection>
+        </box>
+      </box>
+
+      {/* Footer hints */}
+      <box height={1} paddingLeft={1} flexDirection="row" gap={2}>
+        <text style={{ fg: colors.textDim }}>
+          <span style={{ fg: colors.textMuted }}>j/k</span> select
+          {" "}
+          <span style={{ fg: colors.textMuted }}>Tab</span> section
+          {" "}
+          <span style={{ fg: colors.textMuted }}>Enter</span> details
+          {" "}
+          <span style={{ fg: colors.textMuted }}>r</span> refresh
         </text>
-        <text width={6} style={{ fg: PROVIDER_COLORS.aws.primary }}><b>{totals().total}</b></text>
       </box>
     </box>
   )
